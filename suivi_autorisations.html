@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi des autorisations - COSIDER H65</title>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --blue:#0b3d6e;
+    --blue-dark:#06294b;
+    --blue-light:#1478d4;
+    --green:#18a05e;
+    --orange:#f0a400;
+    --red:#dc3545;
+    --bg:#f4f7fb;
+    --white:#fff;
+    --text:#172033;
+    --muted:#6b7280;
+    --border:#dfe5ec;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    font-family:"Inter",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:238px;
+    flex-shrink:0;
+    background:linear-gradient(180deg,#07345d 0%,#06294b 100%);
+    color:white;
+    position:fixed;
+    inset:0 auto 0 0;
+    z-index:20;
+    overflow-y:auto;
+}
+
+.brand{
+    height:92px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 24px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+.brand-icon{
+    font-size:30px;
+}
+
+.brand-name{
+    font-family:"Oswald",sans-serif;
+    font-size:23px;
+    font-weight:600;
+    letter-spacing:.03em;
+}
+
+.menu{
+    padding:18px 10px;
+}
+
+.menu-item{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:13px 15px;
+    margin-bottom:4px;
+    border-radius:7px;
+    color:#f4f7fb;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.menu-item:hover{
+    background:rgba(255,255,255,.10);
+}
+
+.menu-item.active{
+    background:#0879df;
+    box-shadow:0 5px 14px rgba(0,0,0,.18);
+}
+
+.menu-icon{
+    width:22px;
+    text-align:center;
+    font-size:18px;
+}
+
+.menu-section{
+    margin:18px 10px 8px;
+    padding:0 15px;
+    color:#9eb8d2;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:238px;
+    width:calc(100% - 238px);
+    min-width:0;
+    max-width:calc(100% - 238px);
+    overflow-x:hidden;
+}
+
+.top-header{
+    height:92px;
+    background:white;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 34px;
+}
+
+.title-area h1{
+    font-family:"Oswald",sans-serif;
+    font-size:28px;
+    color:#121a27;
+    letter-spacing:.01em;
+}
+
+.breadcrumb{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:5px;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.user-avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#1976d2;
+    color:white;
+    display:grid;
+    place-items:center;
+    font-size:20px;
+}
+
+.content{
+    padding:25px 28px 40px;
+}
+
+/* ================= ACTIONS ================= */
+
+.actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    border:0;
+    border-radius:6px;
+    padding:11px 17px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:.2s;
+}
+
+.btn:hover{transform:translateY(-1px)}
+
+.btn-primary{background:#10a35c;color:white}
+.btn-secondary{background:white;color:#172033;border:1px solid var(--border)}
+.btn-print{background:white;color:#172033;border:1px solid var(--border)}
+
+/* ================= FILTERS ================= */
+
+.filters{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:18px;
+    display:grid;
+    grid-template-columns:minmax(250px,1.7fr) 1fr 1fr 1fr auto auto;
+    gap:12px;
+    align-items:end;
+    margin-bottom:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.field label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:6px;
+    color:#354052;
+}
+
+.field input,
+.field select{
+    width:100%;
+    height:41px;
+    border:1px solid #cfd7e1;
+    border-radius:6px;
+    padding:0 11px;
+    background:white;
+    color:#172033;
+    outline:none;
+}
+
+.field input:focus,
+.field select:focus{
+    border-color:#1478d4;
+    box-shadow:0 0 0 3px rgba(20,120,212,.10);
+}
+
+.filter-btn{
+    height:41px;
+    background:#1478d4;
+    color:white;
+}
+
+.reset-btn{
+    height:41px;
+    background:white;
+    border:1px solid var(--border);
+    color:#4b5563;
+}
+
+/* ================= TABLE ================= */
+
+.table-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+    overflow:hidden;
+}
+
+.table-wrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+}
+
+table{
+    width:100%;
+    min-width:1280px;
+    border-collapse:collapse;
+}
+
+thead th{
+    background:#edf4fb;
+    color:#172033;
+    border-bottom:1px solid #d4deea;
+    padding:12px 10px;
+    text-align:center;
+    font-size:11px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+tbody td{
+    border-bottom:1px solid #e5e9ef;
+    padding:12px 10px;
+    text-align:center;
+    font-size:12px;
+    vertical-align:middle;
+}
+
+tbody tr:hover{
+    background:#f8fbff;
+}
+
+.designation{
+    text-align:left;
+    white-space:normal;
+    width:360px;
+    min-width:280px;
+    max-width:360px;
+    line-height:1.35;
+}
+
+.reference{
+    white-space:nowrap;
+    font-weight:600;
+}
+
+.amount{
+    white-space:nowrap;
+    font-weight:700;
+    color:#092d5b;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:72px;
+    padding:6px 9px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:800;
+}
+
+.badge-green{background:#dff6e9;color:#08763f}
+.badge-orange{background:#fff0d1;color:#9a6200}
+.badge-red{background:#fde1e4;color:#b42332}
+.badge-blue{background:#e0f0ff;color:#1264a3}
+.badge-gray{background:#edf0f3;color:#65707d}
+
+.action-cell{
+    display:flex;
+    justify-content:center;
+    gap:5px;
+}
+
+.icon-btn{
+    width:31px;
+    height:31px;
+    border:0;
+    border-radius:5px;
+    cursor:pointer;
+    color:white;
+    font-size:14px;
+}
+
+.view-btn{background:#1478d4}
+.edit-btn{background:#f0a400}
+.delete-btn{background:#dc3545}
+
+/* ================= TABLE FOOTER ================= */
+
+.table-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    padding:13px 15px;
+    font-size:12px;
+    color:#5c6675;
+}
+
+.pagination{
+    display:flex;
+    gap:4px;
+}
+
+.page-btn{
+    min-width:32px;
+    height:32px;
+    border:1px solid var(--border);
+    background:white;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.page-btn.active{
+    background:#1478d4;
+    color:white;
+    border-color:#1478d4;
+}
+
+/* ================= STATS ================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:1.45fr 1fr 1fr 1fr;
+    gap:18px;
+    margin-top:18px;
+}
+
+.stat-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:19px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.total-card{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.total-icon{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    background:#dff6e9;
+    color:#07904e;
+    display:grid;
+    place-items:center;
+    font-size:25px;
+    flex-shrink:0;
+}
+
+.stat-label{
+    color:#445064;
+    font-size:12px;
+    margin-bottom:5px;
+}
+
+.total-value{
+    color:#078a4b;
+    font-size:21px;
+    font-weight:800;
+}
+
+.mini-stat{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    column-gap:10px;
+    align-items:center;
+}
+
+.mini-icon{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    font-size:17px;
+}
+
+.mini-green{background:#dff6e9;color:#07904e}
+.mini-orange{background:#fff0d1;color:#d78b00}
+.mini-red{background:#fde1e4;color:#d72e3e}
+
+.mini-value{
+    font-size:22px;
+    font-weight:800;
+}
+
+.mini-percent{
+    grid-column:2;
+    font-size:11px;
+    color:#6b7280;
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(6,25,43,.58);
+    z-index:100;
+    padding:25px;
+    overflow-y:auto;
+}
+
+.modal.show{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+}
+
+.modal-box{
+    width:900px;
+    max-width:100%;
+    background:white;
+    border-radius:10px;
+    margin:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+    overflow:hidden;
+}
+
+.modal-head{
+    padding:18px 22px;
+    background:#0b3d6e;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-head h2{
+    font-family:"Oswald",sans-serif;
+    font-size:22px;
+}
+
+.close{
+    border:0;
+    background:transparent;
+    color:white;
+    font-size:25px;
+    cursor:pointer;
+}
+
+.modal-body{
+    padding:23px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group.full{
+    grid-column:1 / -1;
+}
+
+.form-group label{
+    font-size:12px;
+    font-weight:700;
+    color:#344054;
+    margin-bottom:6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width:100%;
+    border:1px solid #ccd5df;
+    border-radius:6px;
+    padding:11px;
+    font-family:inherit;
+    font-size:13px;
+    outline:none;
+}
+
+.form-group textarea{
+    min-height:85px;
+    resize:vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+    border-color:#1478d4;
+    box-shadow:0 0 0 3px rgba(20,120,212,.10);
+}
+
+.modal-footer{
+    padding:15px 23px;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:flex-end;
+    gap:9px;
+}
+
+.save-btn{
+    background:#0b3d6e;
+    color:white;
+}
+
+.cancel-btn{
+    background:#e9edf2;
+    color:#344054;
+}
+
+/* ================= EMPTY ================= */
+
+.empty{
+    padding:45px 20px;
+    text-align:center;
+    color:#7a8492;
+}
+
+.empty strong{
+    display:block;
+    color:#374151;
+    margin-bottom:5px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1100px){
+    .filters{
+        grid-template-columns:1fr 1fr;
+    }
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:800px){
+    .sidebar{
+        width:72px;
+    }
+    .brand{
+        justify-content:center;
+        padding:0;
+    }
+    .brand-name,
+    .menu-item span:not(.menu-icon),
+    .menu-section{
+        display:none;
+    }
+    .menu-item{
+        justify-content:center;
+        padding:13px 5px;
+    }
+   .main{
+        margin-left:72px;
+        width:calc(100% - 72px);
+    }
+    .top-header{
+        padding:0 18px;
+    }
+    .content{
+        padding:18px;
+    }
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+    .form-group.full{
+        grid-column:1;
+    }
+}
+
+@media(max-width:600px){
+    .filters,
+    .stats{
+        grid-template-columns:1fr;
+    }
+    .title-area h1{
+        font-size:22px;
+    }
+    .user{
+        display:none;
+    }
+}
+
+/* ================= SUIVI AUTORISATIONS : SANS MENU GAUCHE ================= */
+.sidebar{display:none !important;}
+.main{
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+}
+.app{width:100%;}
+
+</style>
+
+<style id="header-analytics-exact">
+/* Menu gauche supprimé de l'affichage */
+.sidebar{
+    display:none !important;
+}
+.main{
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+}
+
+/* En-tête comme sur la photo : titre à gauche,
+   4 cartes analytiques au centre, date/admin à droite. */
+.top-header{
+    min-height:138px !important;
+    height:auto !important;
+    padding:18px 34px !important;
+    display:grid !important;
+    grid-template-columns:390px minmax(650px,1fr) 220px !important;
+    gap:14px !important;
+    align-items:center !important;
+    box-sizing:border-box;
+}
+
+.title-area{
+    min-width:0;
+}
+
+.title-area h1{
+    margin:0;
+    white-space:nowrap;
+    font-size:28px;
+}
+
+.stats-header{
+    display:grid !important;
+    grid-template-columns:1.45fr 1fr 1fr 1fr !important;
+    gap:12px !important;
+    margin:0 !important;
+    min-width:0;
+    width:100%;
+    align-self:stretch;
+}
+
+.stats-header .stat-card{
+    min-width:0;
+    padding:14px 12px !important;
+    border-radius:8px;
+    box-sizing:border-box;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.stats-header .total-card{
+    gap:10px;
+}
+
+.stats-header .total-icon{
+    width:42px;
+    height:42px;
+    font-size:20px;
+}
+
+.stats-header .mini-icon{
+    width:32px;
+    height:32px;
+    font-size:16px;
+}
+
+.stats-header .stat-label{
+    font-size:11px;
+    margin-bottom:3px;
+}
+
+.stats-header .total-value{
+    font-size:18px;
+}
+
+.stats-header .mini-value{
+    font-size:18px;
+}
+
+.stats-header .mini-percent{
+    font-size:9px;
+}
+
+.top-header > .user{
+    justify-self:end;
+    white-space:nowrap;
+}
+
+@media (max-width:1250px){
+    .top-header{
+        grid-template-columns:330px minmax(520px,1fr) 190px !important;
+    }
+    .title-area h1{
+        font-size:25px;
+    }
+}
+
+@media (max-width:1050px){
+    .top-header{
+        grid-template-columns:1fr auto !important;
+        min-height:auto !important;
+    }
+    .stats-header{
+        grid-column:1 / -1;
+        grid-row:2;
+        width:100%;
+    }
+    .top-header > .user{
+        grid-column:2;
+        grid-row:1;
+    }
+    .title-area{
+        grid-column:1;
+        grid-row:1;
+    }
+}
+</style>
+
+
+<style id="correction-final-page5">
+html, body {
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow-x:hidden !important;
+}
+.sidebar { display:none !important; }
+.main {
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    overflow-x:hidden !important;
+}
+.top-header {
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+}
+.content {
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    overflow-x:hidden !important;
+}
+.actions {
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    overflow-x:auto !important;
+    justify-content:flex-end !important;
+}
+.filters {
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+}
+.table-card {
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+}
+.table-wrap {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scroll-behavior:auto !important;
+    box-sizing:border-box !important;
+}
+.table-wrap table {
+    min-width:1280px !important;
+}
+</style>
+
+
+<style id="pagination-alignement-fixe">
+html, body {
+    overflow-x:hidden !important;
+    max-width:100% !important;
+}
+.main, .content, .table-card {
+    margin-left:0 !important;
+    transform:none !important;
+}
+.table-wrap {
+    margin-left:0 !important;
+    transform:none !important;
+    scroll-behavior:auto !important;
+    overflow-x:auto !important;
+    direction:ltr !important;
+}
+.table-wrap table {
+    margin-left:0 !important;
+    transform:none !important;
+}
+</style>
+
+
+<style id="table-columns-identiques-toutes-pages">
+/* Même largeur de colonnes sur TOUTES les pages */
+.table-wrap{
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+}
+.table-wrap table{
+    width:100% !important;
+    min-width:1800px !important;
+    table-layout:fixed !important;
+}
+.table-wrap table th:nth-child(1), .table-wrap table td:nth-child(1){width:64px !important;}
+.table-wrap table th:nth-child(2), .table-wrap table td:nth-child(2){width:220px !important;}
+.table-wrap table th:nth-child(3), .table-wrap table td:nth-child(3){width:120px !important;}
+.table-wrap table th:nth-child(4), .table-wrap table td:nth-child(4){width:650px !important;}
+.table-wrap table th:nth-child(5), .table-wrap table td:nth-child(5){width:170px !important;}
+.table-wrap table th:nth-child(6), .table-wrap table td:nth-child(6){width:180px !important;}
+.table-wrap table th:nth-child(7), .table-wrap table td:nth-child(7){width:130px !important;}
+.table-wrap table th:nth-child(8), .table-wrap table td:nth-child(8){width:140px !important;}
+.table-wrap table th:nth-child(9), .table-wrap table td:nth-child(9){width:126px !important;}
+.table-wrap table th, .table-wrap table td{
+    box-sizing:border-box !important;
+}
+.table-wrap .designation{
+    min-width:0 !important;
+    max-width:none !important;
+    width:auto !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+    word-break:normal !important;
+}
+.table-wrap .reference{
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+}
+/* La position horizontale ne dépend plus de la page */
+.table-wrap{scroll-behavior:auto !important;}
+</style>
+
+
+<style id="designation-plus-reduite">
+/* Désignation encore plus compacte */
+table th:nth-child(4),
+table td:nth-child(4) {
+    width: 24% !important;
+    max-width: 24% !important;
+}
+table td:nth-child(4) {
+    white-space: normal !important;
+    word-break: normal !important;
+}
+</style>
+
+</head>
+
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            <div class="brand-name">COSIDER H65</div>
+        </div>
+
+        <nav class="menu">
+            <a class="menu-item" href="dashboard.html">
+                <span class="menu-icon">⌂</span><span>Tableau de bord</span>
+            </a>
+            <a class="menu-item" href="fournisseurs.html">
+                <span class="menu-icon">♙</span><span>Employés / Fournisseurs</span>
+            </a>
+            <a class="menu-item" href="fournisseurs.html">
+                <span class="menu-icon">▣</span><span>Fournisseurs</span>
+            </a>
+            <a class="menu-item" href="bons_commande.html">
+                <span class="menu-icon">▱</span><span>Bons de commande</span>
+            </a>
+
+            <div class="menu-section">Suivis</div>
+
+            <a class="menu-item" href="suivi_consultation.html">
+                <span class="menu-icon">▤</span><span>Suivi des consultations</span>
+            </a>
+
+            <a class="menu-item active" href="suivi_autorisations.html">
+                <span class="menu-icon">✓</span><span>Autorisations</span>
+            </a>
+
+            <div class="menu-section">Autorisations</div>
+
+            <a class="menu-item" href="#" onclick="ouvrirFormulaire();return false;">
+                <span class="menu-icon">＋</span><span>Nouvelle autorisation</span>
+            </a>
+
+            <a class="menu-item" href="suivi_autorisations.html">
+                <span class="menu-icon">▤</span><span>Suivi des autorisations</span>
+            </a>
+
+            <a class="menu-item" href="#">
+                <span class="menu-icon">▥</span><span>Rapports</span>
+            </a>
+
+            <div class="menu-section">Système</div>
+
+            <a class="menu-item" href="#">
+                <span class="menu-icon">⚙</span><span>Paramètres</span>
+            </a>
+            <a class="menu-item" href="#">
+                <span class="menu-icon">♙</span><span>Utilisateurs</span>
+            </a>
+            <a class="menu-item" href="index.html">
+                <span class="menu-icon">⏻</span><span>Déconnexion</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main">
+
+        <header class="top-header">
+            <div class="title-area">
+                <h1>SUIVI DES AUTORISATIONS</h1>
+                <div class="breadcrumb">Accueil &nbsp;/&nbsp; Suivi des autorisations</div>
+            </div>
+
+            <div class="stats stats-header">
+
+                <div class="stat-card total-card">
+                    <div class="total-icon">▣</div>
+                    <div>
+                        <div class="stat-label">Total des montants TTC</div>
+                        <div class="total-value" id="totalMontants">0,00 DA</div>
+                    </div>
+                </div>
+
+                <div class="stat-card mini-stat">
+                    <div class="mini-icon mini-green">✓</div>
+                    <div>
+                        <div class="stat-label">Accordé</div>
+                        <div class="mini-value" id="statAccorde">0</div>
+                        <div class="mini-percent" id="pctAccorde">(0%)</div>
+                    </div>
+                </div>
+
+                <div class="stat-card mini-stat">
+                    <div class="mini-icon mini-orange">◷</div>
+                    <div>
+                        <div class="stat-label">En cours</div>
+                        <div class="mini-value" id="statEnCours">0</div>
+                        <div class="mini-percent" id="pctEnCours">(0%)</div>
+                    </div>
+                </div>
+
+                <div class="stat-card mini-stat">
+                    <div class="mini-icon mini-red">×</div>
+                    <div>
+                        <div class="stat-label">Refusé</div>
+                        <div class="mini-value" id="statRefuse">0</div>
+                        <div class="mini-percent" id="pctRefuse">(0%)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user">
+                <div>📅 <span id="dateActuelle"></span></div>
+                <div class="user-avatar">♙</div>
+                <div class="admin-user" onclick="ouvrirMenuAdmin()" title="Compte administrateur">Admin⌄</div>
+            </div>
+        </header>
+
+        <div id="menuAdmin" class="admin-menu" style="display:none;position:absolute;right:24px;top:76px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);padding:8px;z-index:50;min-width:170px;">
+            <button type="button" onclick="fermerMenuAdmin();alert('Session administrateur active.');" style="display:block;width:100%;border:0;background:white;text-align:left;padding:10px;border-radius:7px;cursor:pointer;">👤 Administrateur</button>
+            <button type="button" onclick="fermerMenuAdmin();window.location.href='index.html';" style="display:block;width:100%;border:0;background:white;text-align:left;padding:10px;border-radius:7px;cursor:pointer;">⏻ Déconnexion</button>
+        </div>
+
+        <section class="content">
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="ouvrirFormulaire()">＋ Nouvelle autorisation</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('fichierExcel').click()">📥 Importer Excel</button>
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">← Retour au Dashboard</button>
+<input id="fichierExcel" type="file" accept=".xlsx,.xls" style="display:none" onchange="importerExcel(event)">
+<button class="btn btn-secondary" onclick="exporterExcel()">⇩ Exporter Excel</button>
+                <button class="btn btn-print" onclick="window.print()">🖨 Imprimer</button>
+            </div>
+
+            <div class="filters">
+                <div class="field">
+                    <label>Rechercher</label>
+                    <input id="recherche" type="text" placeholder="Référence, désignation, observation..." oninput="appliquerFiltres()">
+                </div>
+
+                <div class="field">
+                    <label>Date du</label>
+                    <input id="dateDu" type="date" onchange="appliquerFiltres()">
+                </div>
+
+                <div class="field">
+                    <label>Au</label>
+                    <input id="dateAu" type="date" onchange="appliquerFiltres()">
+                </div>
+
+                <div class="field">
+                    <label>État (OBS 2)</label>
+                    <select id="filtreEtat" onchange="appliquerFiltres()">
+                        <option value="">Tous les états</option>
+                        <option value="LANCEE">LANCEE</option>
+                        <option value="PS">PS</option>
+                        <option value="EN COURS">EN COURS</option>
+                        <option value="AUTRE">Autre / vide</option>
+                    </select>
+                </div>
+
+                <button class="btn filter-btn" onclick="appliquerFiltres()">⚱ Filtrer</button>
+                <button class="btn reset-btn" onclick="reinitialiserFiltres()">↻ Réinitialiser</button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>N°</th>
+                                <th>Référence</th>
+                                <th>Date</th>
+                                <th>Désignation</th>
+                                <th>Durée / Exercice</th>
+                                <th>Montant TTC (DA)</th>
+                                <th>OBS 1</th>
+                                <th>OBS 2 / État</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listeAutorisations"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <div id="compteurLignes">Affichage de 0 autorisation</div>
+                    <div class="pagination">
+                        <button class="page-btn" onclick="changerPage(1)">«</button>
+                        <button class="page-btn" onclick="pagePrecedente()">‹</button>
+                        <button class="page-btn active" id="pageActuelle">1</button>
+                        <button class="page-btn" onclick="pageSuivante()">›</button>
+                        <button class="page-btn" onclick="changerPage(totalPages)">»</button>
+                    </div>
+                </div>
+            </div>
+
+            
+
+        </section>
+    </main>
+</div>
+
+
+<!-- ================= IMPORT EXCEL ================= -->
+<div class="modal" id="modalImport">
+    <div class="modal-box" style="max-width:560px;">
+        <div class="modal-head">
+            <h2>Importer les autorisations Excel</h2>
+            <button class="close" onclick="fermerImport()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <p style="margin-bottom:18px;line-height:1.6;color:#4b5563;">
+                Le fichier Excel sera lu automatiquement selon les colonnes de ton suivi :
+                <strong>N°, Référence, Date, Désignation, Durée, Montant TTC, OBS 1, OBS 2</strong>.
+            </p>
+
+            <div style="display:grid;gap:10px;">
+                <button class="btn btn-primary" onclick="confirmerImport('ajouter')">
+                    ＋ Ajouter les lignes à celles déjà présentes
+                </button>
+                <button class="btn btn-secondary" onclick="confirmerImport('remplacer')">
+                    ⇄ Remplacer complètement le suivi actuel
+                </button>
+                <button class="btn cancel-btn" onclick="fermerImport()">Annuler</button>
+            </div>
+
+            <div id="resultatImport" style="margin-top:18px;font-size:12px;color:#4b5563;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= FORMULAIRE ================= -->
+
+<div class="modal" id="modal">
+    <div class="modal-box">
+
+        <div class="modal-head">
+            <h2 id="titreModal">Nouvelle autorisation</h2>
+            <button class="close" onclick="fermerFormulaire()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>N° *</label>
+                    <input id="numero" type="text" placeholder="Ex : 43">
+                </div>
+
+                <div class="form-group">
+                    <label>Référence *</label>
+                    <input id="reference" type="text" placeholder="Ex : 002/COS/H65/2025">
+                </div>
+
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input id="date" type="date">
+                </div>
+
+                <div class="form-group">
+                    <label>Durée / Exercice</label>
+                    <input id="duree" type="text" placeholder="Ex : EXERCICE 2026">
+                </div>
+
+                <div class="form-group full">
+                    <label>Désignation *</label>
+                    <textarea id="designation" placeholder="Désignation complète de l'autorisation"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Montant TTC (DA) *</label>
+                    <input id="montant" type="number" min="0" step="0.01" placeholder="Ex : 20000000">
+                </div>
+
+                <div class="form-group">
+                    <label>OBS 1</label>
+                    <select id="obs1">
+                        <option value="">-- Choisir --</option>
+                        <option value="Accordé">Accordé</option>
+                        <option value="En cours">En cours</option>
+                        <option value="Refusé">Refusé</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>OBS 2 / État</label>
+                    <select id="obs2">
+                        <option value="">-- Aucun --</option>
+                        <option value="LANCEE">LANCEE</option>
+                        <option value="PS">PS</option>
+                        <option value="EN COURS">EN COURS</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn cancel-btn" onclick="fermerFormulaire()">Annuler</button>
+            <button class="btn save-btn" onclick="enregistrerAutorisation()">Enregistrer</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* =====================================================
+   DONNEES - INDEPENDANTES DES BONS DE COMMANDE
+===================================================== */
+
+const STORAGE_KEY = "autorisationsH65";
+
+let autorisations = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+let listeAffichee = [];
+let indexModification = -1;
+let page = 1;
+let totalPages = 1;
+const lignesParPage = 10;
+
+/* =====================================================
+   OUTILS
+===================================================== */
+
+function echapper(texte){
+    return String(texte ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+function formatMontant(valeur){
+    const n = Number(String(valeur ?? 0).replace(/\s/g,"").replace(",", ".")) || 0;
+    return n.toLocaleString("fr-FR",{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    }) + " DA";
+}
+
+function formatDate(date){
+    if(!date) return "";
+    const d = new Date(date + "T00:00:00");
+    if(Number.isNaN(d.getTime())) return date;
+    return d.toLocaleDateString("fr-FR");
+}
+
+function badgeObs1(valeur){
+    const v = String(valeur || "").toLowerCase();
+    if(v === "accordé") return '<span class="badge badge-green">Accordé</span>';
+    if(v === "en cours") return '<span class="badge badge-orange">En cours</span>';
+    if(v === "refusé") return '<span class="badge badge-red">Refusé</span>';
+    return '<span class="badge badge-gray">—</span>';
+}
+
+function badgeObs2(valeur){
+    const v = String(valeur || "").toUpperCase();
+    if(v === "LANCEE") return '<span class="badge badge-green">LANCEE</span>';
+    if(v === "PS") return '<span class="badge badge-blue">PS</span>';
+    if(v === "EN COURS") return '<span class="badge badge-orange">EN COURS</span>';
+    if(!v) return '<span class="badge badge-gray">—</span>';
+    return `<span class="badge badge-blue">${echapper(valeur)}</span>`;
+}
+
+/* =====================================================
+   AFFICHAGE
+===================================================== */
+
+function afficherAutorisations(liste = autorisations){
+
+    listeAffichee = liste;
+    totalPages = Math.max(1, Math.ceil(listeAffichee.length / lignesParPage));
+
+    if(page > totalPages) page = totalPages;
+
+    const debut = (page - 1) * lignesParPage;
+    const pageData = listeAffichee.slice(debut, debut + lignesParPage);
+
+    const tbody = document.getElementById("listeAutorisations");
+
+    if(!pageData.length){
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9">
+                    <div class="empty">
+                        <strong>Aucune autorisation</strong>
+                        Ajoutez une nouvelle autorisation pour commencer.
+                    </div>
+                </td>
+            </tr>
+        `;
+    }else{
+        tbody.innerHTML = pageData.map((a, localIndex) => {
+
+            const vraiIndex = autorisations.indexOf(a);
+
+            return `
+                <tr>
+                    <td><strong>${echapper(a.numero)}</strong></td>
+                    <td class="reference">${echapper(a.reference)}</td>
+                    <td>${formatDate(a.date)}</td>
+                    <td class="designation">${echapper(a.designation)}</td>
+                    <td>${echapper(a.duree)}</td>
+                    <td class="amount">${formatMontant(a.montant)}</td>
+                    <td>${badgeObs1(a.obs1)}</td>
+                    <td>${badgeObs2(a.obs2)}</td>
+                    <td>
+                        <div class="action-cell">
+                            <button class="icon-btn view-btn" title="Voir" onclick="voirAutorisation(${vraiIndex})">◉</button>
+                            <button class="icon-btn edit-btn" title="Modifier" onclick="modifierAutorisation(${vraiIndex})">✎</button>
+                            <button class="icon-btn delete-btn" title="Supprimer" onclick="supprimerAutorisation(${vraiIndex})">×</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    document.getElementById("compteurLignes").textContent =
+        `Affichage de ${listeAffichee.length} autorisation${listeAffichee.length > 1 ? "s" : ""}`;
+
+    document.getElementById("pageActuelle").textContent = page;
+
+    /* =====================================================
+       ALIGNEMENT HORIZONTAL FIXE POUR TOUTES LES PAGES
+       La page 1, 2, 3, 4, 5, 6... doivent commencer exactement
+       au même endroit. On force le retour à gauche après chaque rendu.
+    ===================================================== */
+    function remettreToutAGauche(){
+        const wrappers = document.querySelectorAll(".table-wrap, .table-card, .content, .main, .actions");
+        wrappers.forEach(el => {
+            el.scrollLeft = 0;
+            el.scrollTo && el.scrollTo({left:0, behavior:"auto"});
+        });
+
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+        window.scrollTo(0, window.scrollY);
+    }
+
+    remettreToutAGauche();
+    requestAnimationFrame(remettreToutAGauche);
+    setTimeout(remettreToutAGauche, 0);
+    setTimeout(remettreToutAGauche, 80);
+    setTimeout(remettreToutAGauche, 250);
+
+    mettreAJourStats(listeAffichee);
+}
+
+function mettreAJourStats(liste){
+
+    let total = 0;
+    let accorde = 0;
+    let enCours = 0;
+    let refuse = 0;
+
+    liste.forEach(a => {
+        total += Number(String(a.montant ?? 0).replace(/\s/g,"").replace(",", ".")) || 0;
+
+        const obs = String(a.obs1 || "").toLowerCase();
+
+        if(obs === "accordé") accorde++;
+        else if(obs === "en cours") enCours++;
+        else if(obs === "refusé") refuse++;
+    });
+
+    document.getElementById("totalMontants").textContent = formatMontant(total);
+    document.getElementById("statAccorde").textContent = accorde;
+    document.getElementById("statEnCours").textContent = enCours;
+    document.getElementById("statRefuse").textContent = refuse;
+
+    const n = liste.length || 1;
+
+    document.getElementById("pctAccorde").textContent =
+        `(${(accorde / n * 100).toFixed(2)}%)`;
+
+    document.getElementById("pctEnCours").textContent =
+        `(${(enCours / n * 100).toFixed(2)}%)`;
+
+    document.getElementById("pctRefuse").textContent =
+        `(${(refuse / n * 100).toFixed(2)}%)`;
+}
+
+/* =====================================================
+   FILTRES
+===================================================== */
+
+function appliquerFiltres(){
+
+    const recherche = document.getElementById("recherche").value.trim().toLowerCase();
+    const dateDu = document.getElementById("dateDu").value;
+    const dateAu = document.getElementById("dateAu").value;
+    const etat = document.getElementById("filtreEtat").value;
+
+    listeAffichee = autorisations.filter(a => {
+
+        const texte = [
+            a.numero,
+            a.reference,
+            a.designation,
+            a.duree,
+            a.obs1,
+            a.obs2
+        ].join(" ").toLowerCase();
+
+        if(recherche && !texte.includes(recherche)) return false;
+        if(dateDu && a.date < dateDu) return false;
+        if(dateAu && a.date > dateAu) return false;
+
+        if(etat === "AUTRE"){
+            if(["LANCEE","PS","EN COURS"].includes(String(a.obs2 || "").toUpperCase())) return false;
+        }else if(etat && String(a.obs2 || "").toUpperCase() !== etat){
+            return false;
+        }
+
+        return true;
+    });
+
+    page = 1;
+    afficherAutorisations(listeAffichee);
+}
+
+function reinitialiserFiltres(){
+    document.getElementById("recherche").value = "";
+    document.getElementById("dateDu").value = "";
+    document.getElementById("dateAu").value = "";
+    document.getElementById("filtreEtat").value = "";
+    page = 1;
+    afficherAutorisations(autorisations);
+}
+
+/* =====================================================
+   PAGINATION
+===================================================== */
+
+function changerPage(n){
+    page = Math.max(1, Math.min(n, totalPages));
+    afficherAutorisations(listeAffichee);
+}
+
+function pagePrecedente(){
+    changerPage(page - 1);
+}
+
+function pageSuivante(){
+    changerPage(page + 1);
+}
+
+/* =====================================================
+   FORMULAIRE
+===================================================== */
+
+function ouvrirFormulaire(index = -1){
+
+    indexModification = index;
+
+    document.getElementById("titreModal").textContent =
+        index === -1 ? "Nouvelle autorisation" : "Modifier l'autorisation";
+
+    if(index === -1){
+        document.getElementById("numero").value = "";
+        document.getElementById("reference").value = "";
+        document.getElementById("date").value = "";
+        document.getElementById("duree").value = "EXERCICE " + new Date().getFullYear();
+        document.getElementById("designation").value = "";
+        document.getElementById("montant").value = "";
+        document.getElementById("obs1").value = "";
+        document.getElementById("obs2").value = "";
+    }else{
+        const a = autorisations[index];
+
+        document.getElementById("numero").value = a.numero || "";
+        document.getElementById("reference").value = a.reference || "";
+        document.getElementById("date").value = a.date || "";
+        document.getElementById("duree").value = a.duree || "";
+        document.getElementById("designation").value = a.designation || "";
+        document.getElementById("montant").value = a.montant || "";
+        document.getElementById("obs1").value = a.obs1 || "";
+        document.getElementById("obs2").value = a.obs2 || "";
+    }
+
+    document.getElementById("modal").classList.add("show");
+}
+
+function fermerFormulaire(){
+    document.getElementById("modal").classList.remove("show");
+    indexModification = -1;
+}
+
+function enregistrerAutorisation(){
+
+    const a = {
+        numero: document.getElementById("numero").value.trim(),
+        reference: document.getElementById("reference").value.trim(),
+        date: document.getElementById("date").value,
+        designation: document.getElementById("designation").value.trim(),
+        duree: document.getElementById("duree").value.trim(),
+        montant: Number(document.getElementById("montant").value || 0),
+        obs1: document.getElementById("obs1").value,
+        obs2: document.getElementById("obs2").value
+    };
+
+    if(!a.numero || !a.reference || !a.date || !a.designation || a.montant <= 0){
+        alert("Veuillez remplir les champs obligatoires.");
+        return;
+    }
+
+    if(indexModification === -1){
+        autorisations.push(a);
+    }else{
+        autorisations[indexModification] = a;
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(autorisations));
+
+    fermerFormulaire();
+    appliquerFiltres();
+}
+
+/* =====================================================
+   VOIR / MODIFIER / SUPPRIMER
+===================================================== */
+
+function voirAutorisation(index){
+
+    const a = autorisations[index];
+
+    alert(
+        "AUTORISATION\n\n" +
+        "N° : " + (a.numero || "") + "\n" +
+        "Référence : " + (a.reference || "") + "\n" +
+        "Date : " + formatDate(a.date) + "\n" +
+        "Désignation : " + (a.designation || "") + "\n" +
+        "Durée : " + (a.duree || "") + "\n" +
+        "Montant TTC : " + formatMontant(a.montant) + "\n" +
+        "OBS 1 : " + (a.obs1 || "—") + "\n" +
+        "OBS 2 : " + (a.obs2 || "—")
+    );
+}
+
+function modifierAutorisation(index){
+    ouvrirFormulaire(index);
+}
+
+function supprimerAutorisation(index){
+
+    if(!confirm("Voulez-vous vraiment supprimer cette autorisation ?")) return;
+
+    autorisations.splice(index,1);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(autorisations));
+
+    appliquerFiltres();
+}
+
+
+/* =====================================================
+   IMPORT EXCEL
+===================================================== */
+
+let donneesExcelImport = null;
+
+function normaliserCle(cle){
+    return String(cle ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g,"");
+}
+
+function convertirDateExcel(valeur){
+    if(valeur instanceof Date){
+        const y = valeur.getFullYear();
+        const m = String(valeur.getMonth()+1).padStart(2,"0");
+        const d = String(valeur.getDate()).padStart(2,"0");
+        return `${y}-${m}-${d}`;
+    }
+
+    if(typeof valeur === "number" && window.XLSX){
+        const date = XLSX.SSF.parse_date_code(valeur);
+        if(date){
+            return `${date.y}-${String(date.m).padStart(2,"0")}-${String(date.d).padStart(2,"0")}`;
+        }
+    }
+
+    const texte = String(valeur ?? "").trim();
+    const match = texte.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+
+    if(match){
+        return `${match[3]}-${String(match[2]).padStart(2,"0")}-${String(match[1]).padStart(2,"0")}`;
+    }
+
+    return texte;
+}
+
+function convertirMontant(valeur){
+    if(typeof valeur === "number") return valeur;
+
+    let texte = String(valeur ?? "")
+        .replace(/\s/g,"")
+        .replace(/DA/gi,"")
+        .trim();
+
+    if(texte.includes(",") && texte.includes(".")){
+        texte = texte.replace(/\./g,"").replace(",",".");
+    }else{
+        texte = texte.replace(",",".");
+    }
+
+    const nombre = Number(texte);
+    return Number.isFinite(nombre) ? nombre : 0;
+}
+
+/* Recherche automatiquement la ligne des vrais en-têtes,
+   même s'il y a des titres ou des lignes vides au-dessus. */
+function trouverLigneEntetes(tableau){
+
+    const groupes = [
+        ["n","numero","numéro","n°"],
+        ["reference","référence","ref","réf"],
+        ["date"],
+        ["designation","désignation","objet"],
+        ["duree","durée","exercice"],
+        ["montant","montant ttc","ttc"],
+        ["obs1","obs 1","observation 1"],
+        ["obs2","obs 2","observation 2","etat","état"]
+    ];
+
+    let meilleurIndex = -1;
+    let meilleurScore = 0;
+
+    for(let i=0; i<Math.min(tableau.length,40); i++){
+
+        const cellules = tableau[i].map(c => normaliserCle(c));
+        let score = 0;
+
+        groupes.forEach(groupe => {
+
+            if(groupe.some(mot => {
+
+                const cible = normaliserCle(mot);
+
+                return cellules.some(cellule =>
+                    cellule === cible ||
+                    (cible.length >= 4 && cellule.includes(cible)) ||
+                    (cellule.length >= 4 && cible.includes(cellule))
+                );
+            })){
+                score++;
+            }
+        });
+
+        if(score > meilleurScore){
+            meilleurScore = score;
+            meilleurIndex = i;
+        }
+    }
+
+    return {
+        index: meilleurIndex,
+        score: meilleurScore
+    };
+}
+
+function trouverColonne(entetes, variantes){
+
+    const variantesNormalisees = variantes.map(normaliserCle);
+
+    for(let i=0; i<entetes.length; i++){
+
+        const cellule = normaliserCle(entetes[i]);
+
+        if(!cellule) continue;
+
+        if(variantesNormalisees.some(cible =>
+            cellule === cible ||
+            (cible.length >= 4 && cellule.includes(cible)) ||
+            (cellule.length >= 4 && cible.includes(cellule))
+        )){
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+function lireLignesExcel(tableau){
+
+    const resultat = [];
+    const info = trouverLigneEntetes(tableau);
+
+    /* Si les vrais en-têtes sont trouvés */
+    if(info.index >= 0 && info.score >= 2){
+
+        const entetes = tableau[info.index];
+
+        /*
+          Dans ton Excel réel, les deux colonnes sont affichées
+          simplement comme "OBS" et "OBS". Il faut donc utiliser
+          la 1re colonne OBS pour OBS 1 et la 2e pour OBS 2.
+        */
+        const colonnesObs = [];
+
+        entetes.forEach((entete, index) => {
+            const cle = normaliserCle(entete);
+            if(cle === "obs" || cle === "observation"){
+                colonnesObs.push(index);
+            }
+        });
+
+        const col = {
+            numero: trouverColonne(entetes, ["N°","N","Numero","Numéro","N° autorisation"]),
+            reference: trouverColonne(entetes, ["Référence","Reference","Ref","Réf"]),
+            date: trouverColonne(entetes, ["Date","Date autorisation"]),
+            designation: trouverColonne(entetes, ["Désignation","Designation","Objet"]),
+            duree: trouverColonne(entetes, ["Durée","Duree","Exercice","Durée / Exercice"]),
+            montant: trouverColonne(entetes, ["Montant TTC","Montant TTC (DA)","Montant","TTC"]),
+
+            /* Excel réel : OBS = Accordé / Non accordé */
+            obs1: colonnesObs.length >= 1
+                ? colonnesObs[0]
+                : trouverColonne(entetes, ["OBS 1","Obs 1","Observation 1"]),
+
+            /* Excel réel : 2e OBS = LANCEE / PS / etc. */
+            obs2: colonnesObs.length >= 2
+                ? colonnesObs[1]
+                : trouverColonne(entetes, ["OBS 2","Obs 2","OBS 2 / État","Etat","État"])
+        };
+
+        for(let i=info.index+1; i<tableau.length; i++){
+
+            const ligne = tableau[i];
+
+            if(!ligne || !ligne.some(c => String(c ?? "").trim() !== "")){
+                continue;
+            }
+
+            const a = {
+                numero: col.numero >= 0 ? String(ligne[col.numero] ?? "").trim() : "",
+                reference: col.reference >= 0 ? String(ligne[col.reference] ?? "").trim() : "",
+                date: col.date >= 0 ? convertirDateExcel(ligne[col.date]) : "",
+                designation: col.designation >= 0 ? String(ligne[col.designation] ?? "").trim() : "",
+                duree: col.duree >= 0 ? String(ligne[col.duree] ?? "").trim() : "",
+                montant: col.montant >= 0 ? convertirMontant(ligne[col.montant]) : 0,
+                obs1: col.obs1 >= 0 ? String(ligne[col.obs1] ?? "").trim() : "",
+                obs2: col.obs2 >= 0 ? String(ligne[col.obs2] ?? "").trim() : ""
+            };
+
+            if(
+                a.numero || a.reference || a.date || a.designation ||
+                a.duree || a.montant || a.obs1 || a.obs2
+            ){
+                resultat.push(a);
+            }
+        }
+
+        return resultat;
+    }
+
+    /* Secours : lecture des 8 premières colonnes */
+    for(const ligne of tableau){
+
+        if(!ligne || ligne.length < 2) continue;
+
+        const texte = ligne.map(c => String(c ?? "").trim()).join(" ");
+
+        if(!texte) continue;
+
+        if(/référence|reference|désignation|designation|montant|obs/i.test(texte)){
+            continue;
+        }
+
+        const a = {
+            numero: String(ligne[0] ?? "").trim(),
+            reference: String(ligne[1] ?? "").trim(),
+            date: convertirDateExcel(ligne[2]),
+            designation: String(ligne[3] ?? "").trim(),
+            duree: String(ligne[4] ?? "").trim(),
+            montant: convertirMontant(ligne[5]),
+            obs1: String(ligne[6] ?? "").trim(),
+            obs2: String(ligne[7] ?? "").trim()
+        };
+
+        if(
+            a.numero || a.reference || a.date || a.designation ||
+            a.duree || a.montant || a.obs1 || a.obs2
+        ){
+            resultat.push(a);
+        }
+    }
+
+    return resultat;
+}
+
+function importerExcel(event){
+
+    const fichier = event.target.files[0];
+
+    if(!fichier) return;
+
+    if(!window.XLSX){
+        alert("Le module Excel n'est pas chargé. Rechargez la page puis réessayez.");
+        event.target.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        try{
+
+            const workbook = XLSX.read(e.target.result,{
+                type:"array",
+                cellDates:true
+            });
+
+            if(!workbook.SheetNames.length){
+                alert("Le fichier Excel ne contient aucune feuille.");
+                return;
+            }
+
+            const nomFeuille = workbook.SheetNames[0];
+            const feuille = workbook.Sheets[nomFeuille];
+
+            /* header:1 permet de rechercher nous-mêmes la ligne d'en-têtes */
+            const tableau = XLSX.utils.sheet_to_json(feuille,{
+                header:1,
+                defval:"",
+                raw:true,
+                blankrows:true
+            });
+
+            donneesExcelImport = lireLignesExcel(tableau);
+
+            if(!donneesExcelImport.length){
+
+                alert(
+                    "Le fichier Excel a été ouvert, mais aucune ligne n'a été reconnue.\n\n" +
+                    "Le système cherche automatiquement les colonnes N°, Référence, Date, Désignation, Durée, Montant TTC, OBS 1 et OBS 2."
+                );
+
+                donneesExcelImport = null;
+                return;
+            }
+
+            document.getElementById("resultatImport").innerHTML =
+                `<strong>${donneesExcelImport.length}</strong> ligne(s) détectée(s) dans la feuille <strong>${echapper(nomFeuille)}</strong>.`;
+
+            document.getElementById("modalImport").classList.add("show");
+
+        }catch(erreur){
+
+            console.error("Erreur import Excel :",erreur);
+
+            alert(
+                "Impossible de lire ce fichier Excel.\n\n" +
+                "Vérifiez qu'il est bien au format .xlsx ou .xls."
+            );
+        }
+
+        event.target.value = "";
+    };
+
+    reader.readAsArrayBuffer(fichier);
+}
+
+function confirmerImport(mode){
+
+    if(!donneesExcelImport || !donneesExcelImport.length){
+        alert("Aucune donnée à importer.");
+        return;
+    }
+
+    if(mode === "remplacer"){
+
+        if(!confirm(
+            "Cela va remplacer toutes les autorisations actuellement enregistrées.\n\nContinuer ?"
+        )){
+            return;
+        }
+
+        autorisations = [...donneesExcelImport];
+
+    }else{
+
+        autorisations = [...autorisations,...donneesExcelImport];
+    }
+
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(autorisations));
+
+    donneesExcelImport = null;
+
+    fermerImport();
+
+    page = 1;
+
+    reinitialiserFiltres();
+
+    alert("Import Excel terminé avec succès.");
+}
+
+function fermerImport(){
+
+    document.getElementById("modalImport").classList.remove("show");
+    document.getElementById("resultatImport").innerHTML = "";
+    donneesExcelImport = null;
+}
+
+/* =====================================================
+   EXPORT EXCEL
+===================================================== */
+
+function exporterExcel(){
+
+    if(!autorisations.length){
+        alert("Aucune autorisation à exporter.");
+        return;
+    }
+
+    if(!window.XLSX){
+        alert("Le module Excel n'est pas chargé. Rechargez la page puis réessayez.");
+        return;
+    }
+
+    const lignes = [
+        ["N°","REFERENCE","DATE","DESIGNATION","DUREE","MONTANT TTC","OBS 1","OBS 2"]
+    ];
+
+    autorisations.forEach(a => {
+        lignes.push([
+            a.numero || "",
+            a.reference || "",
+            a.date || "",
+            a.designation || "",
+            a.duree || "",
+            Number(a.montant || 0),
+            a.obs1 || "",
+            a.obs2 || ""
+        ]);
+    });
+
+    const feuille = XLSX.utils.aoa_to_sheet(lignes);
+    const classeur = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(classeur, feuille, "Autorisations");
+    XLSX.writeFile(classeur, "suivi_autorisations_H65.xlsx");
+}
+
+function ouvrirMenuAdmin(){
+    const menu = document.getElementById("menuAdmin");
+    menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+function fermerMenuAdmin(){
+    const menu = document.getElementById("menuAdmin");
+    if(menu) menu.style.display = "none";
+}
+
+document.addEventListener("click", function(e){
+    const menu = document.getElementById("menuAdmin");
+    const bouton = document.querySelector(".admin-user");
+    if(menu && bouton && !menu.contains(e.target) && !bouton.contains(e.target)){
+        menu.style.display = "none";
+    }
+});
+
+/* =====================================================
+   INITIALISATION
+===================================================== */
+
+document.getElementById("dateActuelle").textContent =
+    new Date().toLocaleDateString("fr-FR");
+
+afficherAutorisations(autorisations);
+
+document.getElementById("modal").addEventListener("click", function(e){
+    if(e.target === this) fermerFormulaire();
+});
+
+document.getElementById("modalImport").addEventListener("click", function(e){
+    if(e.target === this) fermerImport();
+});
+</script>
+
+</body>
+</html>

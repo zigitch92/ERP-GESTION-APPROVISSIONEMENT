@@ -1,0 +1,2313 @@
+html
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Suivi de consultation - COSIDER H65</title>
+
+<style>
+
+/* =========================
+   GENERAL
+========================= */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    color:#222;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    background:#0b3d6e;
+    color:white;
+    padding:20px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header h1{
+    font-size:24px;
+}
+
+.back{
+    background:white;
+    color:#0b3d6e;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+
+/* =========================
+   CONTENU
+========================= */
+
+.container{
+    padding:30px;
+}
+
+
+/* =========================
+   COMPTEURS
+========================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.stat{
+    background:#fff;
+    border:1px solid #d7e0ea;
+    text-align:center;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+
+.stat-title{
+    background:#0b3d6e;
+    color:#ffd000;
+    padding:10px 8px;
+    font-weight:bold;
+    font-size:12px;
+    min-height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.stat-number{
+    padding:15px 8px;
+    font-size:26px;
+    font-weight:bold;
+}
+
+
+/* =========================
+   BARRE
+========================= */
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    border:none;
+    padding:11px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.add-btn{
+    background:#198754;
+    color:white;
+}
+
+.edit-btn{
+    background:#ffc107;
+    color:#212529;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.search{
+    width:320px;
+    padding:11px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+
+/* =========================
+   TABLEAU
+========================= */
+
+.table-scroll-top{
+    position:sticky;
+    top:0;
+    z-index:50;
+    width:100%;
+    height:18px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    background:#f8fafc;
+    border-radius:8px;
+    margin:0 0 6px 0;
+    box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.table-scroll-top-inner{height:1px;min-width:2400px;}
+
+.table-container{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,.1);
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:2400px;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+th:nth-child(1),td:nth-child(1){width:80px}
+th:nth-child(2),td:nth-child(2){width:60px}
+th:nth-child(3),td:nth-child(3){width:145px}
+th:nth-child(4),td:nth-child(4){width:115px}
+th:nth-child(5),td:nth-child(5){width:115px}
+th:nth-child(6),td:nth-child(6){width:280px}
+th:nth-child(7),td:nth-child(7){width:95px}
+th:nth-child(8),td:nth-child(8){width:190px}
+th:nth-child(9),td:nth-child(9){width:125px}
+th:nth-child(10),td:nth-child(10){width:125px}
+th:nth-child(11),td:nth-child(11){width:145px}
+th:nth-child(12),td:nth-child(12){width:150px}
+th:nth-child(13),td:nth-child(13){width:145px}
+th:nth-child(14),td:nth-child(14){width:190px}
+th:nth-child(15),td:nth-child(15){width:145px}
+th:nth-child(16),td:nth-child(16){width:130px}
+
+th{
+    background:#0b3d6e;
+    color:#ffd000;
+    padding:12px;
+    text-align:center;
+    white-space:nowrap;
+    font-size:13px;
+}
+
+td{
+    padding:9px 8px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:13px;
+    height:52px;
+}
+.designation-cell{
+    white-space:normal;
+    text-align:left;
+    line-height:1.25;
+    max-width:280px;
+}
+.empty{padding:40px!important;text-align:center!important;color:#6c757d!important;}
+
+tr:hover{
+    background:#f1f5f9;
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    justify-content:center;
+    align-items:flex-start;
+    padding:30px;
+    overflow-y:auto;
+    z-index:1000;
+}
+
+.modal-content{
+    background:white;
+    width:1100px;
+    max-width:100%;
+    padding:30px;
+    border-radius:12px;
+    margin:auto;
+}
+
+.modal-content h2{
+    color:#0b3d6e;
+    margin-bottom:25px;
+}
+
+
+/* =========================
+   FORMULAIRE
+========================= */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+.form-group input,
+.form-group select{
+    padding:11px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.section-title{
+    grid-column:1 / 3;
+    color:#0b3d6e;
+    border-bottom:1px solid #ddd;
+    padding-bottom:8px;
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+
+/* =========================
+   BOUTONS MODAL
+========================= */
+
+.modal-buttons{
+    grid-column:1 / 3;
+    margin-top:20px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.save-btn{
+    background:#0b3d6e;
+    color:white;
+}
+
+.cancel-btn{
+    background:#6c757d;
+    color:white;
+}
+
+
+/* =========================
+   BADGES
+========================= */
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.en-cours{
+    background:#fff3cd;
+    color:#664d03;
+}
+
+.enregistre{
+    background:#d1e7dd;
+    color:#0f5132;
+}
+
+.non-facture{
+    background:#fff3cd;
+    color:#664d03;
+}
+
+.infructueuse{
+    background:#f8d7da;
+    color:#842029;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:800px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .section-title,
+    .modal-buttons{
+        grid-column:1;
+    }
+
+    .header{
+        flex-direction:column;
+        gap:15px;
+        text-align:center;
+    }
+
+}
+
+
+/* =========================
+   SIDEBAR COSIDER H65
+========================= */
+.side-menu{position:fixed;left:0;top:0;bottom:0;width:238px;background:linear-gradient(180deg,#07345d 0%,#06294b 100%);color:white;z-index:2000;overflow-y:auto}
+.side-brand{height:92px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.12)}
+.side-brand-icon{font-size:30px}.side-brand-name{font-size:22px;font-weight:bold}
+.side-nav{padding:18px 10px}.side-link{display:flex;align-items:center;gap:13px;padding:13px 15px;margin-bottom:4px;border-radius:7px;color:#f4f7fb;text-decoration:none;font-size:14px;font-weight:bold}
+.side-link:hover{background:rgba(255,255,255,.10)}.side-link.active{background:#0879df;box-shadow:0 5px 14px rgba(0,0,0,.18)}
+.side-icon{width:22px;text-align:center;font-size:18px}.side-section{margin:18px 10px 8px;padding:0 15px;color:#9eb8d2;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.12em}
+.page-with-sidebar{margin-left:238px}
+@media(max-width:800px){.side-menu{width:72px}.side-brand{justify-content:center;padding:0}.side-brand-name,.side-link span:not(.side-icon),.side-section{display:none}.side-link{justify-content:center;padding:13px 5px}.page-with-sidebar{margin-left:72px}}
+
+
+.export-btn,.import-btn{padding:10px 14px;border:1px solid #d5dce5;border-radius:6px;cursor:pointer;font-weight:bold;background:#fff;color:#123;margin-left:8px;}.export-btn:hover,.import-btn:hover{background:#f1f5f9;}
+</style>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style id="sans-menu-left">
+.side-menu{display:none !important;}
+.page-with-sidebar{margin-left:0 !important;width:100% !important;}
+</style>
+</head>
+
+
+<body>
+
+<div class="page-with-sidebar">
+
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header class="header">
+
+    <h1>📋 Suivi des consultations</h1>
+
+    <button
+        class="back"
+        onclick="window.location.href='dashboard.html'">
+
+        ← Retour au Dashboard
+
+    </button>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- =========================
+     COMPTEURS
+========================= -->
+
+<div class="stats">
+    <div class="stat">
+        <div class="stat-title">TOTAL CONSULTATIONS</div>
+        <div class="stat-number" id="compteurTotal">0</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">CONTRAT EN COURS D'ENREGISTREMENT</div>
+        <div class="stat-number" id="compteurEnregistrement">0</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">CONTRAT NON FACTURÉ</div>
+        <div class="stat-number" id="compteurNonFacture">0</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">CONTRAT INFRUCTUEUX</div>
+        <div class="stat-number" id="compteurInfructueuse">0</div>
+    </div>
+    <div class="stat stat-total">
+        <div class="stat-title">TOTAL MONTANT TTC</div>
+        <div class="stat-number" id="totalTTC">0,00 DA</div>
+    </div>
+</div>
+
+
+<!-- =========================
+     BARRE BOUTONS
+========================= -->
+
+<div class="top-bar">
+
+    <div class="buttons">
+
+        <button class="export-btn" onclick="exporterConsultationsExcel()">↥ Exporter Excel</button>
+        <button class="import-btn" onclick="document.getElementById('importConsultationsExcel').click()">📥 Importer Excel</button>
+        <input type="file" id="importConsultationsExcel" accept=".xlsx,.xls,.csv" style="display:none" onchange="importerConsultationsExcel(this)">
+
+<button
+            class="add-btn"
+            onclick="ouvrirFormulaire()">
+
+            + Ajouter une consultation
+
+        </button>
+
+
+        <button
+            class="edit-btn"
+            onclick="modifierConsultation()">
+
+            ✏️ Modifier
+
+        </button>
+
+
+        <button
+            class="delete-btn"
+            onclick="supprimerConsultation()">
+
+            🗑 Supprimer
+
+        </button>
+
+    </div>
+
+
+    <input
+        type="text"
+        id="recherche"
+        class="search"
+        placeholder="🔍 Rechercher..."
+        oninput="rechercher()">
+
+</div>
+
+
+<!-- =========================
+     TABLEAU
+========================= -->
+
+<div class="table-scroll-top" id="tableScrollTop" title="Défilement horizontal">
+    <div class="table-scroll-top-inner" id="tableScrollTopInner"></div>
+</div>
+
+<div class="table-container" id="tableContainer">
+
+<table>
+
+<thead>
+
+<tr>
+
+    <th>Sélection</th>
+
+    <th>N°</th>
+
+    <th>N° Consultation</th>
+
+    <th>Date lancement</th>
+
+    <th>Date limite</th>
+
+    <th>Objet du contrat</th>
+
+    <th>Heure limite</th>
+
+    <th>Sous-traitant retenu</th>
+
+    <th>Durée du contrat</th>
+
+    <th>Délai de livraison</th>
+
+    <th>Date d'entrée en vigueur</th>
+
+    <th>Montant</th>
+
+    <th>Obs. contrat</th>
+
+    <th>N° enregistrement</th>
+
+    <th>Date d'enregistrement</th>
+
+    <th>Facturation</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="listeConsultations"></tbody>
+
+</table>
+
+</div>
+
+</main>
+
+
+</div>
+
+<!-- =========================
+     MODAL
+========================= -->
+
+<div
+    class="modal"
+    id="modal">
+
+<div class="modal-content">
+
+<h2 id="titreModal">
+    Ajouter une consultation
+</h2>
+
+
+<div class="form-grid">
+
+
+<!-- =========================
+     CONSULTATION
+========================= -->
+
+<div class="section-title">
+    📋 Consultation
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        N° Consultation *
+    </label>
+
+    <input
+        type="text"
+        id="numeroConsultation"
+        placeholder="Ex : 001/H65/2026">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Date lancement *
+    </label>
+
+    <input
+        type="date"
+        id="dateLancement">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Date limite *
+    </label>
+
+    <input
+        type="date"
+        id="dateLimite">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Heure limite
+    </label>
+
+    <input
+        type="time"
+        id="heureLimite">
+
+</div>
+
+
+<div
+    class="form-group"
+    style="grid-column:1 / 3;">
+
+    <label>
+        Objet du contrat *
+    </label>
+
+    <input
+        type="text"
+        id="objetContrat"
+        placeholder="Ex : Fourniture de matériel informatique">
+
+</div>
+
+
+<!-- =========================
+     INFORMATIONS CONTRAT
+========================= -->
+
+<div class="section-title">
+    📄 Informations du contrat
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Sous-traitant retenu
+    </label>
+
+    <input
+        type="text"
+        id="sousTraitant"
+        placeholder="Nom du sous-traitant">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Durée du contrat
+    </label>
+
+    <input
+        type="text"
+        id="dureeContrat"
+        placeholder="Ex : 6 mois">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Délai de livraison
+    </label>
+
+    <input
+        type="text"
+        id="delaiLivraison"
+        placeholder="Ex : 45 jours">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Date d'entrée en vigueur
+    </label>
+
+    <input
+        type="date"
+        id="dateEntree">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Montant
+    </label>
+
+    <input
+        type="number"
+        id="montant"
+        min="0"
+        step="0.01"
+        placeholder="0.00">
+
+</div>
+
+
+<!-- =========================
+     SUIVI ENREGISTREMENT
+========================= -->
+
+<div class="section-title">
+    📝 Enregistrement du contrat
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Observation contrat
+    </label>
+
+    <select id="observation">
+
+        <option value="EN_COURS_ENREGISTREMENT">
+            EN COURS D'ENREGISTREMENT
+        </option>
+
+        <option value="ENREGISTRE">
+            ENREGISTRE
+        </option>
+
+        <option value="INFRUCTUEUSE">
+            INFRUCTUEUSE
+        </option>
+
+    </select>
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        N° enregistrement
+    </label>
+
+    <input
+        type="text"
+        id="numeroEnregistrement"
+        placeholder="Ex : AL/055/26/C/DH/H65">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Date d'enregistrement
+    </label>
+
+    <input
+        type="date"
+        id="dateEnregistrement">
+
+</div>
+
+
+<div class="form-group">
+
+    <label>
+        Facturation
+    </label>
+
+    <select id="facturation">
+
+        <option value="">
+            -- Choisir --
+        </option>
+
+        <option value="FACTUREE">
+            FACTUREE
+        </option>
+
+        <option value="NON FACTUREE">
+            NON FACTUREE
+        </option>
+
+    </select>
+
+</div>
+
+
+<!-- =========================
+     BOUTONS
+========================= -->
+
+<div class="modal-buttons">
+
+    <button
+        type="button"
+        class="cancel-btn"
+        onclick="fermerFormulaire()">
+
+        Annuler
+
+    </button>
+
+
+    <button
+        type="button"
+        class="save-btn"
+        id="boutonSauvegarder"
+        onclick="ajouterConsultation()">
+
+        Enregistrer
+
+    </button>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+
+/* =====================================================
+   DONNEES
+===================================================== */
+
+let consultations =
+    JSON.parse(
+        localStorage.getItem("consultations")
+    ) || [];
+
+
+/*
+   Permet de savoir si nous sommes
+   en mode modification.
+*/
+
+let indexConsultationAModifier = null;
+
+
+/* =====================================================
+   FORMAT MONTANT
+===================================================== */
+
+function formatMontant(montant){
+
+    return Number(montant || 0)
+        .toLocaleString("fr-FR") + " DA";
+
+}
+
+
+/* =====================================================
+   OUVRIR FORMULAIRE
+===================================================== */
+
+function ouvrirFormulaire(){
+
+    indexConsultationAModifier = null;
+
+    document
+        .getElementById("titreModal")
+        .textContent =
+        "Ajouter une consultation";
+
+    document
+        .getElementById("boutonSauvegarder")
+        .textContent =
+        "Enregistrer";
+
+    reinitialiserFormulaire();
+
+    /*
+       Nouvelle consultation :
+       automatiquement en cours d'enregistrement.
+    */
+
+    document
+        .getElementById("observation")
+        .value =
+        "EN_COURS_ENREGISTREMENT";
+
+
+    document
+        .getElementById("modal")
+        .style.display =
+        "flex";
+
+}
+
+
+/* =====================================================
+   FERMER FORMULAIRE
+===================================================== */
+
+function fermerFormulaire(){
+
+    document
+        .getElementById("modal")
+        .style.display =
+        "none";
+
+}
+
+
+/* =====================================================
+   AJOUTER OU MODIFIER
+===================================================== */
+
+function ajouterConsultation(){
+
+    const numero =
+        document
+            .getElementById("numeroConsultation")
+            .value
+            .trim();
+
+    const dateLancement =
+        document
+            .getElementById("dateLancement")
+            .value;
+
+    const dateLimite =
+        document
+            .getElementById("dateLimite")
+            .value;
+
+    const objet =
+        document
+            .getElementById("objetContrat")
+            .value
+            .trim();
+
+
+    /* =========================
+       VERIFICATION
+    ========================= */
+
+    if(
+        !numero ||
+        !dateLancement ||
+        !dateLimite ||
+        !objet
+    ){
+
+        alert(
+            "Veuillez remplir les informations obligatoires."
+        );
+
+        return;
+
+    }
+
+
+    /* =========================
+       CREATION OBJET
+    ========================= */
+
+    const consultation = {
+
+        numero:
+            numero,
+
+        dateLancement:
+            dateLancement,
+
+        dateLimite:
+            dateLimite,
+
+        objet:
+            objet,
+
+        heureLimite:
+            document
+                .getElementById("heureLimite")
+                .value,
+
+        sousTraitant:
+            document
+                .getElementById("sousTraitant")
+                .value
+                .trim(),
+
+        dureeContrat:
+            document
+                .getElementById("dureeContrat")
+                .value
+                .trim(),
+
+        delaiLivraison:
+            document
+                .getElementById("delaiLivraison")
+                .value
+                .trim(),
+
+        dateEntree:
+            document
+                .getElementById("dateEntree")
+                .value,
+
+        montant:
+            Number(
+                document
+                    .getElementById("montant")
+                    .value || 0
+            ),
+
+        observation:
+            document
+                .getElementById("observation")
+                .value,
+
+        numeroEnregistrement:
+            document
+                .getElementById("numeroEnregistrement")
+                .value
+                .trim(),
+
+        dateEnregistrement:
+            document
+                .getElementById("dateEnregistrement")
+                .value,
+
+        facturation:
+            document
+                .getElementById("facturation")
+                .value
+
+    };
+
+
+    /* =================================================
+       MODIFICATION
+    ================================================= */
+
+    if(
+        indexConsultationAModifier !== null
+    ){
+
+        consultations[
+            indexConsultationAModifier
+        ] = consultation;
+
+
+        alert(
+            "Consultation modifiée avec succès."
+        );
+
+    }
+
+
+    /* =================================================
+       NOUVELLE CONSULTATION
+    ================================================= */
+
+    else{
+
+        /*
+           Une nouvelle consultation commence
+           toujours en cours d'enregistrement.
+        */
+
+        consultation.observation =
+            "EN_COURS_ENREGISTREMENT";
+
+
+        consultations.push(
+            consultation
+        );
+
+
+        alert(
+            "Consultation ajoutée."
+        );
+
+    }
+
+
+    /* =========================
+       SAUVEGARDE
+    ========================= */
+
+    localStorage.setItem(
+        "consultations",
+        JSON.stringify(consultations)
+    );
+
+
+    indexConsultationAModifier = null;
+
+
+    afficherConsultations();
+
+    reinitialiserFormulaire();
+
+    fermerFormulaire();
+
+
+    document
+        .getElementById("titreModal")
+        .textContent =
+        "Ajouter une consultation";
+
+
+    document
+        .getElementById("boutonSauvegarder")
+        .textContent =
+        "Enregistrer";
+
+}
+
+
+/* =====================================================
+   AFFICHER CONSULTATIONS
+===================================================== */
+
+function afficherConsultations(
+    liste = consultations
+){
+
+    const tableau =
+        document
+            .getElementById(
+                "listeConsultations"
+            );
+
+
+    tableau.innerHTML = "";
+
+
+    liste.forEach(
+        function(c){
+
+            /*
+               IMPORTANT :
+               On récupère l'index réel dans
+               le tableau consultations.
+               
+               Cela permet au bouton Modifier
+               de fonctionner correctement même
+               après une recherche.
+            */
+
+            const indexReel =
+                consultations.indexOf(c);
+
+
+            /* =========================
+               OBSERVATION
+            ========================= */
+
+            let observation = "-";
+
+
+            if(
+                c.observation ===
+                "EN_COURS_ENREGISTREMENT"
+            ){
+
+                observation =
+                    `<span class="badge en-cours">
+                        EN COURS D'ENREGISTREMENT
+                    </span>`;
+
+            }
+
+
+            if(
+                c.observation ===
+                "ENREGISTRE"
+            ){
+
+                observation =
+                    `<span class="badge enregistre">
+                        ENREGISTRE
+                    </span>`;
+
+            }
+
+
+            if(
+                c.observation ===
+                "INFRUCTUEUSE"
+            ){
+
+                observation =
+                    `<span class="badge infructueuse">
+                        INFRUCTUEUSE
+                    </span>`;
+
+            }
+
+
+            /* =========================
+               FACTURATION
+            ========================= */
+
+            let facturation = "-";
+
+
+            if(
+                c.facturation ===
+                "FACTUREE"
+            ){
+
+                facturation =
+                    `<span class="badge enregistre">
+                        FACTUREE
+                    </span>`;
+
+            }
+
+
+            if(
+                c.facturation ===
+                "NON FACTUREE"
+            ){
+
+                facturation =
+                    `<span class="badge non-facture">
+                        NON FACTUREE
+                    </span>`;
+
+            }
+
+
+            /* =========================
+               LIGNE
+            ========================= */
+
+            tableau.innerHTML += `
+
+                <tr>
+
+                    <td>
+
+                        <input
+                            type="checkbox"
+                            class="consultation-check"
+                            data-index="${indexReel}">
+
+                    </td>
+
+
+                    <td>
+                        ${indexReel + 1}
+                    </td>
+
+
+                    <td>
+                        ${c.numero || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.dateLancement || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.dateLimite || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.objet || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.heureLimite || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.sousTraitant || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.dureeContrat || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.delaiLivraison || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.dateEntree || ""}
+                    </td>
+
+
+                    <td>
+                        ${formatMontant(c.montant)}
+                    </td>
+
+
+                    <td>
+                        ${observation}
+                    </td>
+
+
+                    <td>
+                        ${c.numeroEnregistrement || ""}
+                    </td>
+
+
+                    <td>
+                        ${c.dateEnregistrement || ""}
+                    </td>
+
+
+                    <td>
+                        ${facturation}
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    mettreAJourCompteurs();
+
+}
+
+
+/* =====================================================
+   MODIFIER CONSULTATION
+===================================================== */
+
+function modifierConsultation(){
+
+    const cases =
+        document.querySelectorAll(
+            ".consultation-check:checked"
+        );
+
+
+    /* Une seule ligne */
+
+    if(cases.length !== 1){
+
+        alert(
+            "Sélectionnez une seule consultation à modifier."
+        );
+
+        return;
+
+    }
+
+
+    const index =
+        Number(
+            cases[0].dataset.index
+        );
+
+
+    const c =
+        consultations[index];
+
+
+    if(!c){
+
+        alert(
+            "Consultation introuvable."
+        );
+
+        return;
+
+    }
+
+
+    /* =========================
+       REMPLIR LE FORMULAIRE
+    ========================= */
+
+    document
+        .getElementById("numeroConsultation")
+        .value =
+        c.numero || "";
+
+
+    document
+        .getElementById("dateLancement")
+        .value =
+        c.dateLancement || "";
+
+
+    document
+        .getElementById("dateLimite")
+        .value =
+        c.dateLimite || "";
+
+
+    document
+        .getElementById("heureLimite")
+        .value =
+        c.heureLimite || "";
+
+
+    document
+        .getElementById("objetContrat")
+        .value =
+        c.objet || "";
+
+
+    document
+        .getElementById("sousTraitant")
+        .value =
+        c.sousTraitant || "";
+
+
+    document
+        .getElementById("dureeContrat")
+        .value =
+        c.dureeContrat || "";
+
+
+    document
+        .getElementById("delaiLivraison")
+        .value =
+        c.delaiLivraison || "";
+
+
+    document
+        .getElementById("dateEntree")
+        .value =
+        c.dateEntree || "";
+
+
+    document
+        .getElementById("montant")
+        .value =
+        c.montant || "";
+
+
+    document
+        .getElementById("observation")
+        .value =
+        c.observation ||
+        "EN_COURS_ENREGISTREMENT";
+
+
+    document
+        .getElementById("numeroEnregistrement")
+        .value =
+        c.numeroEnregistrement || "";
+
+
+    document
+        .getElementById("dateEnregistrement")
+        .value =
+        c.dateEnregistrement || "";
+
+
+    document
+        .getElementById("facturation")
+        .value =
+        c.facturation || "";
+
+
+    /* =========================
+       MODE MODIFICATION
+    ========================= */
+
+    indexConsultationAModifier =
+        index;
+
+
+    document
+        .getElementById("titreModal")
+        .textContent =
+        "Modifier la consultation";
+
+
+    document
+        .getElementById("boutonSauvegarder")
+        .textContent =
+        "Enregistrer les modifications";
+
+
+    document
+        .getElementById("modal")
+        .style.display =
+        "flex";
+
+}
+
+
+/* =====================================================
+   COMPTEURS
+===================================================== */
+
+function mettreAJourCompteursAncien(){
+
+    let enregistrement = 0;
+
+    let nonFacture = 0;
+
+    let infructueuse = 0;
+
+
+    consultations.forEach(
+        function(c){
+
+
+            /* =========================
+               EN COURS D'ENREGISTREMENT
+            ========================= */
+
+            if(
+                c.observation ===
+                "EN_COURS_ENREGISTREMENT"
+            ){
+
+                enregistrement++;
+
+            }
+
+
+            /* =========================
+               NON FACTURE
+            ========================= */
+
+            if(
+                c.facturation ===
+                "NON FACTUREE"
+            ){
+
+                nonFacture++;
+
+            }
+
+
+            /* =========================
+               INFRUCTUEUSE
+            ========================= */
+
+            if(
+                c.observation ===
+                "INFRUCTUEUSE"
+            ){
+
+                infructueuse++;
+
+            }
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "compteurEnregistrement"
+        )
+        .textContent =
+        enregistrement;
+
+
+    document
+        .getElementById(
+            "compteurNonFacture"
+        )
+        .textContent =
+        nonFacture;
+
+
+    document
+        .getElementById(
+            "compteurInfructueuse"
+        )
+        .textContent =
+        infructueuse;
+
+}
+
+
+/* =====================================================
+   REINITIALISER FORMULAIRE
+===================================================== */
+
+function reinitialiserFormulaire(){
+
+    document
+        .querySelectorAll(
+            "#modal input"
+        )
+        .forEach(
+            function(input){
+
+                input.value = "";
+
+            }
+        );
+
+
+    document
+        .getElementById("observation")
+        .value =
+        "EN_COURS_ENREGISTREMENT";
+
+
+    document
+        .getElementById("facturation")
+        .value =
+        "";
+
+}
+
+
+/* =====================================================
+   SUPPRIMER
+===================================================== */
+
+function supprimerConsultation(){
+
+    const cases =
+        document.querySelectorAll(
+            ".consultation-check:checked"
+        );
+
+
+    if(cases.length === 0){
+
+        alert(
+            "Sélectionnez au moins une consultation."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !confirm(
+            "Voulez-vous supprimer la ou les consultations sélectionnées ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const indices =
+        Array.from(cases)
+            .map(
+                function(c){
+
+                    return Number(
+                        c.dataset.index
+                    );
+
+                }
+            )
+            .sort(
+                function(a,b){
+
+                    return b-a;
+
+                }
+            );
+
+
+    indices.forEach(
+        function(index){
+
+            consultations.splice(
+                index,
+                1
+            );
+
+        }
+    );
+
+
+    localStorage.setItem(
+        "consultations",
+        JSON.stringify(consultations)
+    );
+
+
+    afficherConsultations();
+
+}
+
+
+/* =====================================================
+   RECHERCHE
+===================================================== */
+
+function rechercher(){
+
+    const recherche =
+        document
+            .getElementById("recherche")
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    const resultat =
+        consultations.filter(
+            function(c){
+
+                return (
+
+                    String(
+                        c.numero || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+
+                    ||
+
+
+                    String(
+                        c.objet || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+
+                    ||
+
+
+                    String(
+                        c.sousTraitant || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+
+                    ||
+
+
+                    String(
+                        c.numeroEnregistrement || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+
+                    ||
+
+
+                    String(
+                        c.facturation || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+
+                    ||
+
+
+                    String(
+                        c.observation || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                );
+
+            }
+        );
+
+
+    afficherConsultations(
+        resultat
+    );
+
+}
+
+
+/* =====================================================
+   FERMER MODAL EN CLIQUANT EN DEHORS
+===================================================== */
+
+document
+    .getElementById("modal")
+    .addEventListener(
+        "click",
+        function(e){
+
+            if(
+                e.target ===
+                document.getElementById("modal")
+            ){
+
+                fermerFormulaire();
+
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   DEMARRAGE
+===================================================== */
+
+afficherConsultations();
+
+</script>
+
+
+<script>
+/* =====================================================
+   IMPORT / EXPORT EXCEL - STRUCTURE EXACTE DU FICHIER
+===================================================== */
+
+function normaliserConsult(v){
+    return String(v ?? '')
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[°ºª]/g,'')
+        .replace(/[^a-z0-9]/g,'');
+}
+
+function texteConsult(v){
+    if(v === null || v === undefined) return '';
+    if(v instanceof Date && !isNaN(v)){
+        return String(v.getDate()).padStart(2,'0')+'/'+
+               String(v.getMonth()+1).padStart(2,'0')+'/'+
+               v.getFullYear();
+    }
+    return String(v).trim();
+}
+
+function dateVersInput(v){
+    if(v === null || v === undefined || v === '') return '';
+
+    if(v instanceof Date && !isNaN(v)){
+        return v.getFullYear()+'-'+
+               String(v.getMonth()+1).padStart(2,'0')+'-'+
+               String(v.getDate()).padStart(2,'0');
+    }
+
+    // Date Excel sérialisée (au cas où SheetJS la retourne comme nombre).
+    if(typeof v === 'number' && isFinite(v) && v > 20000 && v < 70000){
+        const d = new Date(Date.UTC(1899,11,30) + Math.round(v)*86400000);
+        return d.getUTCFullYear()+'-'+
+               String(d.getUTCMonth()+1).padStart(2,'0')+'-'+
+               String(d.getUTCDate()).padStart(2,'0');
+    }
+
+    const s=String(v).trim();
+
+    if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)){
+        const p=s.split('-');
+        return p[0]+'-'+String(p[1]).padStart(2,'0')+'-'+String(p[2]).padStart(2,'0');
+    }
+
+    const m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    if(m) return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+
+    return s;
+}
+
+function dateAffichage(v){
+    if(!v) return '';
+    const s=String(v).trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+        const p=s.split('-');
+        return p[2]+'/'+p[1]+'/'+p[0];
+    }
+    return s;
+}
+
+function numConsult(v){
+    if(typeof v === 'number') return v;
+    let s=String(v ?? '').trim().replace(/\s/g,'').replace(/DA/gi,'');
+    if(!s) return 0;
+    if(s.includes(',') && s.includes('.')){
+        if(s.lastIndexOf(',') > s.lastIndexOf('.')) s=s.replace(/\./g,'').replace(',','.');
+        else s=s.replace(/,/g,'');
+    } else if(s.includes(',')) {
+        s=s.replace(',','.');
+    }
+    return Number(s) || 0;
+}
+
+function valeurParAlias(row, aliases){
+    const wanted=aliases.map(normaliserConsult);
+    for(const key of Object.keys(row || {})){
+        if(wanted.includes(normaliserConsult(key))) return row[key] ?? '';
+    }
+    return '';
+}
+
+/* Noms exactement utilisés dans ton Excel + variantes tolérées */
+const CONSULT_ALIASES={
+    numero:['N° CONSULTATION','Nº CONSULTATION','N CONSULTATION','NUMERO CONSULTATION','NUMÉRO CONSULTATION','NUM CONSULTATION'],
+    dateLancement:['DATE LANCEMENT','DATE DE LANCEMENT'],
+    dateLimite:['DATE LIMITE','DATE LIMITE DE REMISE'],
+    objet:['OBJECT DU CONTRAT','OBJECT  DU CONTRAT','OBJET DU CONTRAT','OBJET','DESIGNATION','DÉSIGNATION'],
+    heureLimite:['HEURE LIMITE'],
+    sousTraitant:['SOUS-TRAITANT RETENUE','SOUS-TRAITANT RETENU','SOUS TRAITANT RETENUE','SOUS TRAITANT RETENU'],
+    dureeContrat:['DUREE DU CONTRAT','DURÉE DU CONTRAT','DUREE CONTRAT','DURÉE CONTRAT'],
+    delaiLivraison:['DELAI DE LIVRAISON','DÉLAI DE LIVRAISON','DELAI LIVRAISON'],
+    dateEntree:['DATE D’ENTR EN VIGUEUR','DATE D\'ENTR EN VIGUEUR','DATE D’ENTREE EN VIGUEUR','DATE D\'ENTREE EN VIGUEUR','DATE ENTREE EN VIGUEUR'],
+    montant:['MONTANT EN TTC','MONTANT TTC','MONTANT','MONTANT DA'],
+    observation:['OBS CONTRAT','OBS. CONTRAT','OBSERVATION CONTRAT','OBSERVATION'],
+    numeroEnregistrement:['N ENREGISTREMENT','N° ENREGISTREMENT','NUMERO ENREGISTREMENT','NUMÉRO ENREGISTREMENT'],
+    dateEnregistrement:['DATE D’ENREGISTREMENT','DATE D\'ENREGISTREMENT','DATE ENREGISTREMENT'],
+    facturation:['FACTURATION','ETAT FACTURATION','ÉTAT FACTURATION','ETAT DE FACTURATION','ÉTAT DE FACTURATION']
+};
+
+function exporterConsultationsExcel(){
+    const rows=consultations.map((c,i)=>({
+        'N°':i+1,
+        'N° CONSULTATION':c.numero||'',
+        'DATE LANCEMENT':c.dateLancement||'',
+        'DATE LIMITE':c.dateLimite||'',
+        'OBJECT  DU CONTRAT':c.objet||'',
+        'HEURE LIMITE':c.heureLimite||'',
+        'SOUS-TRAITANT RETENUE':c.sousTraitant||'',
+        'DUREE DU CONTRAT':c.dureeContrat||'',
+        'Délai de livraison':c.delaiLivraison||'',
+        "DATE D'ENTR  EN VIGUEUR":c.dateEntree||'',
+        'MONTANT EN TTC':c.montant||0,
+        'OBS CONTRAT':c.observationExcel || c.observation || '',
+        'N ENREGISTREMENT':c.numeroEnregistrement||'',
+        "DATE D'ENREGISTREMENT":c.dateEnregistrement||'',
+        'FACTURATION':c.facturation||''
+    }));
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'SOUS-TRAITANCE');
+    XLSX.writeFile(wb,'suivi_consultation.xlsx');
+}
+
+
+function trouverEntete(matrix){
+    const required = {
+        numero: CONSULT_ALIASES.numero.map(normaliserConsult),
+        dateLancement: CONSULT_ALIASES.dateLancement.map(normaliserConsult),
+        dateLimite: CONSULT_ALIASES.dateLimite.map(normaliserConsult),
+        objet: CONSULT_ALIASES.objet.map(normaliserConsult),
+        heureLimite: CONSULT_ALIASES.heureLimite.map(normaliserConsult),
+        sousTraitant: CONSULT_ALIASES.sousTraitant.map(normaliserConsult)
+    };
+
+    let meilleurIndex = -1;
+    let meilleurScore = -1;
+
+    for(let i=0; i<Math.min(matrix.length, 80); i++){
+        const cellules = (matrix[i] || []).map(normaliserConsult).filter(Boolean);
+
+        let score = 0;
+        if(cellules.some(x => required.numero.includes(x))) score++;
+        if(cellules.some(x => required.dateLancement.includes(x))) score++;
+        if(cellules.some(x => required.dateLimite.includes(x))) score++;
+        if(cellules.some(x => required.objet.includes(x))) score++;
+        if(cellules.some(x => required.heureLimite.includes(x))) score++;
+        if(cellules.some(x => required.sousTraitant.includes(x))) score++;
+
+        if(score > meilleurScore){
+            meilleurScore = score;
+            meilleurIndex = i;
+        }
+    }
+
+    return {index: meilleurIndex, score: meilleurScore};
+}
+
+function trouverColonne(headers, aliases){
+    const wanted = aliases.map(normaliserConsult);
+    for(let i=0; i<headers.length; i++){
+        if(wanted.includes(normaliserConsult(headers[i]))) return i;
+    }
+    return -1;
+}
+
+function valeurColonne(row, index){
+    return index >= 0 ? (row[index] ?? '') : '';
+}
+
+function importerConsultationsExcel(input){
+    const file=input.files && input.files[0];
+    if(!file) return;
+
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+        try{
+            const wb=XLSX.read(new Uint8Array(e.target.result),{
+                type:'array',
+                cellDates:true,
+                raw:true
+            });
+
+            // La feuille utilisée par ton fichier est SOUS-TRAITANCE.
+            const nomFeuille =
+                wb.SheetNames.find(n => normaliserConsult(n) === 'soustraitance')
+                || wb.SheetNames[0];
+
+            if(!nomFeuille){
+                throw new Error('Aucune feuille Excel trouvée.');
+            }
+
+            const ws=wb.Sheets[nomFeuille];
+
+            const matrix=XLSX.utils.sheet_to_json(ws,{
+                header:1,
+                defval:'',
+                raw:true,
+                blankrows:true
+            });
+
+            const info=trouverEntete(matrix);
+
+            if(info.index < 0 || info.score < 4){
+                alert(
+                    'Impossible de reconnaître le tableau Excel.\\n\\n' +
+                    'La ligne des colonnes doit contenir notamment : ' +
+                    'N° CONSULTATION, DATE LANCEMENT, DATE LIMITE, OBJET DU CONTRAT.'
+                );
+                return;
+            }
+
+            const headers=(matrix[info.index] || []).map(h => texteConsult(h));
+
+            // On repère chaque colonne par son nom réel.
+            // Cela évite surtout de confondre "N°" avec "N° CONSULTATION".
+            const col = {
+                numero: trouverColonne(headers, CONSULT_ALIASES.numero),
+                dateLancement: trouverColonne(headers, CONSULT_ALIASES.dateLancement),
+                dateLimite: trouverColonne(headers, CONSULT_ALIASES.dateLimite),
+                objet: trouverColonne(headers, CONSULT_ALIASES.objet),
+                heureLimite: trouverColonne(headers, CONSULT_ALIASES.heureLimite),
+                sousTraitant: trouverColonne(headers, CONSULT_ALIASES.sousTraitant),
+                dureeContrat: trouverColonne(headers, CONSULT_ALIASES.dureeContrat),
+                delaiLivraison: trouverColonne(headers, CONSULT_ALIASES.delaiLivraison),
+                dateEntree: trouverColonne(headers, CONSULT_ALIASES.dateEntree),
+                montant: trouverColonne(headers, CONSULT_ALIASES.montant),
+                observation: trouverColonne(headers, CONSULT_ALIASES.observation),
+                numeroEnregistrement: trouverColonne(headers, CONSULT_ALIASES.numeroEnregistrement),
+                dateEnregistrement: trouverColonne(headers, CONSULT_ALIASES.dateEnregistrement),
+                facturation: trouverColonne(headers, CONSULT_ALIASES.facturation)
+            };
+
+            // Il faut au minimum pouvoir lire le numéro, l'objet ou la date.
+            if(col.numero < 0 && col.objet < 0 && col.dateLancement < 0){
+                alert('Les colonnes du fichier Excel n’ont pas pu être reconnues.');
+                return;
+            }
+
+            const importees=[];
+
+            for(let r=info.index+1; r<matrix.length; r++){
+                const row=matrix[r] || [];
+
+                const numero=texteConsult(valeurColonne(row,col.numero));
+                const objet=texteConsult(valeurColonne(row,col.objet));
+                const dateLancement=dateVersInput(valeurColonne(row,col.dateLancement));
+
+                // Ignore les lignes complètement vides.
+                const autreValeur =
+                    texteConsult(valeurColonne(row,col.dateLimite)) ||
+                    texteConsult(valeurColonne(row,col.sousTraitant)) ||
+                    texteConsult(valeurColonne(row,col.montant)) ||
+                    texteConsult(valeurColonne(row,col.observation));
+
+                if(!numero && !objet && !dateLancement && !autreValeur) continue;
+
+                // Ignore une éventuelle répétition de la ligne d'en-tête.
+                const nNumero=normaliserConsult(numero);
+                if(nNumero==='nconsultation' || nNumero==='numero' || nNumero==='n') continue;
+
+                const obs=texteConsult(valeurColonne(row,col.observation));
+                const fact=texteConsult(valeurColonne(row,col.facturation));
+
+                importees.push({
+                    numero,
+                    dateLancement,
+                    dateLimite:dateVersInput(valeurColonne(row,col.dateLimite)),
+                    objet,
+                    heureLimite:texteConsult(valeurColonne(row,col.heureLimite)),
+                    sousTraitant:texteConsult(valeurColonne(row,col.sousTraitant)),
+                    dureeContrat:texteConsult(valeurColonne(row,col.dureeContrat)),
+                    delaiLivraison:texteConsult(valeurColonne(row,col.delaiLivraison)),
+                    dateEntree:dateVersInput(valeurColonne(row,col.dateEntree)),
+                    montant:numConsult(valeurColonne(row,col.montant)),
+                    observation:obs,
+                    observationExcel:obs,
+                    numeroEnregistrement:texteConsult(valeurColonne(row,col.numeroEnregistrement)),
+                    dateEnregistrement:dateVersInput(valeurColonne(row,col.dateEnregistrement)),
+                    facturation:fact,
+                    sourceExcel:true
+                });
+            }
+
+            if(!importees.length){
+                alert(
+                    'Le fichier Excel a bien été ouvert, mais aucune ligne de consultation n’a été trouvée sous les en-têtes.'
+                );
+                return;
+            }
+
+            if(consultations.length>0){
+                const ok=confirm(
+                    'Le fichier contient '+importees.length+' consultation(s).\\n\\n' +
+                    'Voulez-vous remplacer les données actuellement affichées par celles du fichier Excel ?'
+                );
+                if(!ok) return;
+            }
+
+            consultations=importees;
+
+            localStorage.setItem(
+                'consultations',
+                JSON.stringify(consultations)
+            );
+
+            afficherConsultations();
+            mettreAJourCompteurs();
+
+            alert(
+                importees.length +
+                ' consultation(s) importée(s) avec succès.'
+            );
+
+        }catch(err){
+            console.error('Import Excel:',err);
+            alert(
+                'Impossible de lire ce fichier Excel.\\n\\n' +
+                'Vérifiez qu’il s’agit bien d’un fichier .xlsx, .xls ou .csv.'
+            );
+        }finally{
+            input.value='';
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+/* =====================================================
+   COMPTEURS ANALYTIQUES
+===================================================== */
+function mettreAJourCompteurs(){
+    let enregistrement = 0;
+    let nonFacture = 0;
+    let infructueuse = 0;
+    let totalTTC = 0;
+
+    consultations.forEach(c => {
+        const obs = normaliserConsult(c.observationExcel || c.observation || '');
+        const fact = normaliserConsult(c.facturation || '');
+
+        // "Contrat en cours d'enregistrement" = NON ENREGISTRÉ
+        // The Excel file uses this wording in OBS CONTRAT.
+        if (
+            obs.includes('nonenregistre') ||
+            obs.includes('encoursenregistrement') ||
+            obs.includes('encoursdenregistrement')
+        ) {
+            enregistrement++;
+        }
+
+        // Non facturé = both spellings used by the Excel file:
+        // "NON FACTUREE" and "NON FACTURÉE"
+        if (fact.includes('nonfacturee') || fact.includes('nonfacture')) {
+            nonFacture++;
+        }
+
+        // Infructueuse is stored in OBS CONTRAT in the user's Excel
+        // ("INFCT" / "INFRUCTUEUSE"). We also accept it in FACTURATION.
+        if (
+            obs.includes('infructueuse') || obs.startsWith('inf') ||
+            fact.includes('infructueuse') || fact.startsWith('inf')
+        ) {
+            infructueuse++;
+        }
+
+        totalTTC += numConsult(c.montant);
+    });
+
+    const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+
+    set('compteurTotal', consultations.length);
+    set('compteurEnregistrement', enregistrement);
+    set('compteurNonFacture', nonFacture);
+    set('compteurInfructueuse', infructueuse);
+    set(
+        'totalTTC',
+        totalTTC.toLocaleString('fr-FR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) + ' DA'
+    );
+}
+
+
+/* =====================================================
+   BARRE DE DEFILEMENT HORIZONTALE EN HAUT
+===================================================== */
+(function(){
+    const top = document.getElementById('tableScrollTop');
+    const topInner = document.getElementById('tableScrollTopInner');
+    const box = document.getElementById('tableContainer');
+    const table = box ? box.querySelector('table') : null;
+    if(!top || !topInner || !box || !table) return;
+
+    function syncWidth(){
+        topInner.style.width = Math.max(table.scrollWidth, box.clientWidth) + 'px';
+    }
+
+    let syncing = false;
+    top.addEventListener('scroll', function(){
+        if(syncing) return;
+        syncing = true;
+        box.scrollLeft = top.scrollLeft;
+        requestAnimationFrame(()=>syncing=false);
+    });
+
+    box.addEventListener('scroll', function(){
+        if(syncing) return;
+        syncing = true;
+        top.scrollLeft = box.scrollLeft;
+        requestAnimationFrame(()=>syncing=false);
+    });
+
+    window.addEventListener('resize', syncWidth);
+    syncWidth();
+})();
+
+/* =====================================================
+   DEMARRAGE FINAL
+===================================================== */
+mettreAJourCompteurs();
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Suivi des bons de commande - COSIDER H65</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    color:#222;
+}
+
+.header{
+    background:#0b3d6e;
+    color:white;
+    padding:20px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header h1{
+    font-size:23px;
+}
+
+.back{
+    background:white;
+    color:#0b3d6e;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.container{
+    padding:30px;
+}
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    border:none;
+    padding:11px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.add-btn{
+    background:#198754;
+    color:white;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.search{
+    width:300px;
+    padding:11px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.table-container{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,.1);
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:1700px;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0b3d6e;
+    color:white;
+    padding:12px;
+    text-align:left;
+    white-space:nowrap;
+}
+
+td{
+    padding:11px;
+    border-bottom:1px solid #ddd;
+    white-space:nowrap;
+}
+
+tr:hover{
+    background:#f1f5f9;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    justify-content:center;
+    align-items:flex-start;
+    padding:20px;
+    overflow-y:auto;
+    z-index:1000;
+}
+
+.modal-content{
+    background:white;
+    width:1000px;
+    max-width:100%;
+    padding:30px;
+    border-radius:12px;
+    max-height:calc(100vh - 40px);
+    overflow-y:auto;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+.form-group input,
+.form-group select{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.section-title{
+    grid-column:1 / 3;
+    color:#0b3d6e;
+    border-bottom:1px solid #ddd;
+    padding-bottom:8px;
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.document-list{
+    grid-column:1 / 3;
+}
+
+.document-line{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:10px;
+    margin-bottom:10px;
+    align-items:end;
+}
+
+.document-line input{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.add-line{
+    background:#198754;
+    color:white;
+    margin-top:5px;
+}
+
+.remove-line{
+    background:#dc3545;
+    color:white;
+}
+
+.modal-buttons{
+    grid-column:1 / 3;
+    margin-top:20px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.save-btn{
+    background:#0b3d6e;
+    color:white;
+}
+
+.cancel-btn{
+    background:#6c757d;
+    color:white;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:5px;
+    background:#e9ecef;
+    font-size:12px;
+    margin:2px;
+}
+
+@media(max-width:700px){
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .section-title,
+    .document-list,
+    .modal-buttons{
+        grid-column:1;
+    }
+
+    .document-line{
+        grid-template-columns:1fr;
+    }
+
+    .header{
+        flex-direction:column;
+        gap:15px;
+        text-align:center;
+    }
+
+}
+
+
+.export-btn,.import-btn{padding:10px 14px;border:1px solid #d5dce5;border-radius:6px;cursor:pointer;font-weight:bold;background:#fff;color:#123;margin-left:8px;}.export-btn:hover,.import-btn:hover{background:#f1f5f9;}
+</style>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <h1>📋 Suivi des bons de commande</h1>
+
+    <button
+        class="back"
+        onclick="window.location.href='dashboard.html'">
+
+        ← Retour au Dashboard
+
+    </button>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="top-bar">
+
+        <div class="buttons">
+
+            <button class="export-btn" onclick="exporterBCExcel()">↥ Exporter Excel</button>
+            <button class="import-btn" onclick="document.getElementById('importBCExcel').click()">📥 Importer Excel</button>
+            <input type="file" id="importBCExcel" accept=".xlsx,.xls,.csv" style="display:none" onchange="importerBCExcel(this)">
+
+<button
+                class="add-btn"
+                onclick="ouvrirFormulaire()">
+
+                + Ajouter un bon de commande
+
+            </button>
+
+
+            <button
+                class="delete-btn"
+                onclick="supprimerBC()">
+
+                🗑 Supprimer
+
+            </button>
+
+        </div>
+
+
+        <input
+            type="text"
+            id="recherche"
+            class="search"
+            placeholder="🔍 Rechercher..."
+            oninput="rechercherBC()">
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Sélection</th>
+
+                    <th>N° BC</th>
+
+                    <th>Date BC</th>
+
+                    <th>Exercice</th>
+
+                    <th>Société</th>
+
+                    <th>Nature</th>
+
+                    <th>Sous-nature / Produit</th>
+
+                    <th>Montant HT</th>
+
+                    <th>Montant TTC</th>
+
+                    <th>Bons de livraison</th>
+
+                    <th>BEM</th>
+
+                    <th>N° Facture</th>
+
+                    <th>Date facture</th>
+
+                    <th>Facture TTC</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="listeBC"></tbody>
+
+        </table>
+
+    </div>
+
+</main>
+
+
+
+<!-- =========================
+     FORMULAIRE BC
+========================= -->
+
+<div class="modal" id="modal">
+
+
+    <div class="modal-content">
+
+
+        <h2>Ajouter un bon de commande</h2>
+
+
+        <div class="form-grid">
+
+
+            <div class="section-title">
+
+                📋 Bon de commande
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>N° Bon de commande *</label>
+
+                <input
+                    type="text"
+                    id="numeroBC"
+                    placeholder="Ex : BC-2026-001">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Date du bon de commande *</label>
+
+                <input
+                    type="date"
+                    id="dateBC">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Société / Fournisseur *</label>
+
+                <select id="societe">
+
+                    <option value="">
+
+                        -- Sélectionner un fournisseur --
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Nature *</label>
+
+                <select id="nature">
+
+                    <option value="">
+
+                        -- Choisir --
+
+                    </option>
+
+                    <option value="Fourniture">
+
+                        Fourniture
+
+                    </option>
+
+                    <option value="Prestation">
+
+                        Prestation
+
+                    </option>
+
+                    <option value="Location">
+
+                        Location
+
+                    </option>
+
+                    <option value="Travaux">
+
+                        Travaux
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Sous-nature / Produit</label>
+
+                <input
+                    type="text"
+                    id="sousNature"
+                    placeholder="Ex : Ciment, Gasoil, câble...">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Montant HT *</label>
+
+                <input
+                    type="number"
+                    id="montantHT"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Montant TTC *</label>
+
+                <input
+                    type="number"
+                    id="montantTTC"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00">
+
+            </div>
+
+
+
+            <div class="section-title">
+
+                🚚 Bons de livraison
+
+            </div>
+
+
+            <div class="document-list">
+
+                <div id="listeBL"></div>
+
+
+                <button
+                    type="button"
+                    class="add-line"
+                    onclick="ajouterBL()">
+
+                    + Ajouter un bon de livraison
+
+                </button>
+
+            </div>
+
+
+
+            <div class="section-title">
+
+                📦 BEM - Bon d'entrée magasin
+
+            </div>
+
+
+            <div class="document-list">
+
+                <div id="listeBEM"></div>
+
+
+                <button
+                    type="button"
+                    class="add-line"
+                    onclick="ajouterBEM()">
+
+                    + Ajouter un BEM
+
+                </button>
+
+            </div>
+
+
+
+            <div class="section-title">
+
+                🧾 Facture
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>N° Facture</label>
+
+                <input
+                    type="text"
+                    id="numeroFacture"
+                    placeholder="Numéro facture">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Date facture</label>
+
+                <input
+                    type="date"
+                    id="dateFacture">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Montant facture TTC</label>
+
+                <input
+                    type="number"
+                    id="montantFactureTTC"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00">
+
+            </div>
+
+
+            <div class="modal-buttons">
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="fermerFormulaire()">
+
+                    Annuler
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="save-btn"
+                    onclick="ajouterBC()">
+
+                    Enregistrer
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+
+/* =====================================================
+   DONNEES
+===================================================== */
+
+let fournisseurs = [];
+
+let bonsCommande =
+    JSON.parse(
+        localStorage.getItem("bonsCommande")
+    ) || [];
+
+
+
+/* =====================================================
+   FORMAT MONTANT
+===================================================== */
+
+function formatMontant(montant){
+
+    return Number(montant || 0)
+        .toLocaleString("fr-FR") + " DA";
+
+}
+
+
+
+/* =====================================================
+   CHARGER FOURNISSEURS
+===================================================== */
+
+function chargerFournisseurs(){
+
+    fournisseurs =
+        JSON.parse(
+            localStorage.getItem("fournisseurs")
+        ) || [];
+
+
+    const select =
+        document.getElementById("societe");
+
+
+    select.innerHTML = `
+
+        <option value="">
+
+            -- Sélectionner un fournisseur --
+
+        </option>
+
+    `;
+
+
+    fournisseurs.forEach(function(fournisseur){
+
+        if(!fournisseur){
+
+            return;
+
+        }
+
+
+        const nom =
+            fournisseur.societe
+            ||
+            fournisseur.nom
+            ||
+            fournisseur.raisonSociale
+            ||
+            "";
+
+
+        if(!nom){
+
+            return;
+
+        }
+
+
+        const option =
+            document.createElement("option");
+
+
+        option.value = nom;
+
+        option.textContent = nom;
+
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+
+/* =====================================================
+   OUVRIR FORMULAIRE
+===================================================== */
+
+function ouvrirFormulaire(){
+
+    chargerFournisseurs();
+
+    document.getElementById("modal")
+        .style.display = "flex";
+
+}
+
+
+
+/* =====================================================
+   FERMER FORMULAIRE
+===================================================== */
+
+function fermerFormulaire(){
+
+    document.getElementById("modal")
+        .style.display = "none";
+
+}
+
+
+
+/* =====================================================
+   AJOUTER BL
+===================================================== */
+
+function ajouterBL(
+    numero = "",
+    date = ""
+){
+
+    const liste =
+        document.getElementById("listeBL");
+
+
+    const ligne =
+        document.createElement("div");
+
+
+    ligne.className =
+        "document-line";
+
+
+    ligne.innerHTML = `
+
+        <div class="form-group">
+
+            <label>N° Bon de livraison</label>
+
+            <input
+                type="text"
+                class="numeroBL"
+                value="${numero}"
+                placeholder="N° BL">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Date BL</label>
+
+            <input
+                type="date"
+                class="dateBL"
+                value="${date}">
+
+        </div>
+
+
+        <button
+            type="button"
+            class="remove-line"
+            onclick="this.parentElement.remove()">
+
+            Supprimer
+
+        </button>
+
+    `;
+
+
+    liste.appendChild(ligne);
+
+}
+
+
+
+/* =====================================================
+   AJOUTER BEM
+===================================================== */
+
+function ajouterBEM(
+    numero = "",
+    date = ""
+){
+
+    const liste =
+        document.getElementById("listeBEM");
+
+
+    const ligne =
+        document.createElement("div");
+
+
+    ligne.className =
+        "document-line";
+
+
+    ligne.innerHTML = `
+
+        <div class="form-group">
+
+            <label>N° BEM</label>
+
+            <input
+                type="text"
+                class="numeroBEM"
+                value="${numero}"
+                placeholder="N° BEM">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Date BEM</label>
+
+            <input
+                type="date"
+                class="dateBEM"
+                value="${date}">
+
+        </div>
+
+
+        <button
+            type="button"
+            class="remove-line"
+            onclick="this.parentElement.remove()">
+
+            Supprimer
+
+        </button>
+
+    `;
+
+
+    liste.appendChild(ligne);
+
+}
+
+
+
+/* =====================================================
+   AJOUTER BC
+===================================================== */
+
+function ajouterBC(){
+
+    const numeroBC =
+        document.getElementById("numeroBC")
+            .value
+            .trim();
+
+
+    const dateBC =
+        document.getElementById("dateBC")
+            .value;
+
+
+    const societe =
+        document.getElementById("societe")
+            .value;
+
+
+    const nature =
+        document.getElementById("nature")
+            .value;
+
+
+    const sousNature =
+        document.getElementById("sousNature")
+            .value
+            .trim();
+
+
+    const montantHT =
+        Number(
+            document.getElementById("montantHT")
+                .value || 0
+        );
+
+
+    const montantTTC =
+        Number(
+            document.getElementById("montantTTC")
+                .value || 0
+        );
+
+
+    /* =========================
+       CONTROLE CHAMPS
+    ========================= */
+
+    if(
+        !numeroBC
+        ||
+        !dateBC
+        ||
+        !societe
+        ||
+        !nature
+        ||
+        montantHT <= 0
+        ||
+        montantTTC <= 0
+    ){
+
+        alert(
+            "Veuillez remplir toutes les informations obligatoires du bon de commande."
+        );
+
+        return;
+
+    }
+
+
+
+    /* =========================
+       EXERCICE
+    ========================= */
+
+    const exercice =
+        new Date(
+            dateBC + "T00:00:00"
+        ).getFullYear();
+
+
+
+    /* =========================
+       BONS DE LIVRAISON
+    ========================= */
+
+    const bonsLivraison = [];
+
+
+    document
+        .querySelectorAll(
+            "#listeBL .document-line"
+        )
+        .forEach(function(ligne){
+
+            const numero =
+                ligne
+                    .querySelector(".numeroBL")
+                    .value
+                    .trim();
+
+
+            const date =
+                ligne
+                    .querySelector(".dateBL")
+                    .value;
+
+
+            if(numero || date){
+
+                bonsLivraison.push({
+
+                    numero: numero,
+
+                    date: date
+
+                });
+
+            }
+
+        });
+
+
+
+    /* =========================
+       BEM
+    ========================= */
+
+    const bem = [];
+
+
+    document
+        .querySelectorAll(
+            "#listeBEM .document-line"
+        )
+        .forEach(function(ligne){
+
+            const numero =
+                ligne
+                    .querySelector(".numeroBEM")
+                    .value
+                    .trim();
+
+
+            const date =
+                ligne
+                    .querySelector(".dateBEM")
+                    .value;
+
+
+            if(numero || date){
+
+                bem.push({
+
+                    numero: numero,
+
+                    date: date
+
+                });
+
+            }
+
+        });
+
+
+
+    /* =========================
+       FACTURE
+    ========================= */
+
+    const numeroFacture =
+        document
+            .getElementById("numeroFacture")
+            .value
+            .trim();
+
+
+    const dateFacture =
+        document
+            .getElementById("dateFacture")
+            .value;
+
+
+    const montantFactureTTC =
+        Number(
+            document
+                .getElementById(
+                    "montantFactureTTC"
+                )
+                .value || 0
+        );
+
+
+
+    /* =========================
+       CREATION BC
+    ========================= */
+
+    const bc = {
+
+        numeroBC: numeroBC,
+
+        dateBC: dateBC,
+
+        exercice: exercice,
+
+        societe: societe,
+
+        nature: nature,
+
+        sousNature: sousNature,
+
+        montantHT: montantHT,
+
+        montantTTC: montantTTC,
+
+        bonsLivraison: bonsLivraison,
+
+        bem: bem,
+
+        numeroFacture: numeroFacture,
+
+        dateFacture: dateFacture,
+
+        montantFactureTTC: montantFactureTTC
+
+    };
+
+
+
+    /* =========================
+       SAUVEGARDE
+    ========================= */
+
+    bonsCommande.push(bc);
+
+
+    localStorage.setItem(
+        "bonsCommande",
+        JSON.stringify(bonsCommande)
+    );
+
+
+    afficherBC();
+
+
+    fermerFormulaire();
+
+
+    reinitialiserFormulaire();
+
+
+    alert(
+        "Bon de commande enregistré."
+    );
+
+}
+
+
+
+/* =====================================================
+   AFFICHER BC
+===================================================== */
+
+function afficherBC(
+    liste = bonsCommande
+){
+
+    const tableau =
+        document.getElementById("listeBC");
+
+
+    tableau.innerHTML = "";
+
+
+    liste.forEach(
+        function(bc,index){
+
+            const blTexte =
+                (bc.bonsLivraison || [])
+                    .map(function(bl){
+
+                        return `
+
+                            <span class="badge">
+
+                                ${bl.numero || "-"}
+
+                                ${bl.date || ""}
+
+                            </span>
+
+                        `;
+
+                    })
+                    .join("");
+
+
+            const bemTexte =
+                (bc.bem || [])
+                    .map(function(item){
+
+                        return `
+
+                            <span class="badge">
+
+                                ${item.numero || "-"}
+
+                                ${item.date || ""}
+
+                            </span>
+
+                        `;
+
+                    })
+                    .join("");
+
+
+            tableau.innerHTML += `
+
+                <tr>
+
+                    <td>
+
+                        <input
+                            type="checkbox"
+                            class="bc-check"
+                            data-index="${index}">
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.numeroBC || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.dateBC || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.exercice || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.societe || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.nature || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.sousNature || ""}
+
+                    </td>
+
+
+                    <td>
+
+                        ${formatMontant(
+                            bc.montantHT
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        ${formatMontant(
+                            bc.montantTTC
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        ${blTexte || "-"}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bemTexte || "-"}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.numeroFacture || "-"}
+
+                    </td>
+
+
+                    <td>
+
+                        ${bc.dateFacture || "-"}
+
+                    </td>
+
+
+                    <td>
+
+                        ${formatMontant(
+                            bc.montantFactureTTC
+                        )}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   REINITIALISER FORMULAIRE
+===================================================== */
+
+function reinitialiserFormulaire(){
+
+    document
+        .querySelectorAll(
+            "#modal input"
+        )
+        .forEach(function(input){
+
+            input.value = "";
+
+        });
+
+
+    document.getElementById("societe")
+        .value = "";
+
+
+    document.getElementById("nature")
+        .value = "";
+
+
+    document.getElementById("listeBL")
+        .innerHTML = "";
+
+
+    document.getElementById("listeBEM")
+        .innerHTML = "";
+
+}
+
+
+
+/* =====================================================
+   SUPPRIMER BC
+===================================================== */
+
+function supprimerBC(){
+
+    const cases =
+        document.querySelectorAll(
+            ".bc-check:checked"
+        );
+
+
+    if(cases.length === 0){
+
+        alert(
+            "Sélectionnez au moins un bon de commande."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !confirm(
+            "Voulez-vous supprimer le(s) bon(s) de commande sélectionné(s) ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const indices =
+        Array.from(cases)
+
+            .map(function(c){
+
+                return Number(
+                    c.dataset.index
+                );
+
+            })
+
+            .sort(function(a,b){
+
+                return b-a;
+
+            });
+
+
+    indices.forEach(function(index){
+
+        bonsCommande.splice(
+            index,
+            1
+        );
+
+    });
+
+
+    localStorage.setItem(
+        "bonsCommande",
+        JSON.stringify(bonsCommande)
+    );
+
+
+    afficherBC();
+
+}
+
+
+
+/* =====================================================
+   RECHERCHE
+===================================================== */
+
+function rechercherBC(){
+
+    const recherche =
+        document
+            .getElementById("recherche")
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    const resultat =
+        bonsCommande.filter(
+            function(bc){
+
+                return (
+
+                    String(
+                        bc.numeroBC || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                    ||
+
+                    String(
+                        bc.societe || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                    ||
+
+                    String(
+                        bc.nature || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                    ||
+
+                    String(
+                        bc.sousNature || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                    ||
+
+                    String(
+                        bc.numeroFacture || ""
+                    )
+                    .toLowerCase()
+                    .includes(recherche)
+
+                );
+
+            }
+        );
+
+
+    afficherBC(resultat);
+
+}
+
+
+
+/* =====================================================
+   DEMARRAGE
+===================================================== */
+
+chargerFournisseurs();
+
+afficherBC();
+
+</script>
+
+
+
+<script>
+function normaliserBC(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
+function valBC(row,aliases){const ks=Object.keys(row), a=aliases.map(normaliserBC), k=ks.find(x=>a.includes(normaliserBC(x))); return k!==undefined?(row[k]??''):'';}
+function numBC(v){if(typeof v==='number')return v; let s=String(v??'').replace(/\s/g,'').replace(/DA/gi,'').replace(/\./g,'').replace(',','.'); return Number(s)||0;}
+function jsonBC(v){if(!v)return []; if(Array.isArray(v))return v; try{return JSON.parse(v)}catch{return String(v).split(';').map(x=>({numero:x.trim(),date:''})).filter(x=>x.numero)}}
+function exporterBCExcel(){
+ const rows=bonsCommande.map(b=>({
+  'N° BC':b.numeroBC||'','Date BC':b.dateBC||'','Exercice':b.exercice||'','Société':b.societe||'','Nature':b.nature||'','Sous-nature / Produit':b.sousNature||'',
+  'Montant HT':b.montantHT||0,'Montant TTC':b.montantTTC||0,
+  'Bons de livraison':(b.bonsLivraison||[]).map(x=>[x.numero,x.date].filter(Boolean).join(' ')).join(' | '),
+  'BEM':(b.bem||[]).map(x=>[x.numero,x.date].filter(Boolean).join(' ')).join(' | '),
+  'N° Facture':b.numeroFacture||'','Date facture':b.dateFacture||'','Facture TTC':b.montantFactureTTC||0
+ }));
+ const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Bons de commande'); XLSX.writeFile(wb,'bons_commande.xlsx');
+}
+function importerBCExcel(input){
+ const file=input.files&&input.files[0];if(!file)return; const r=new FileReader();
+ r.onload=e=>{try{
+  const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}), ws=wb.Sheets[wb.SheetNames[0]], rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+  const imp=rows.map(x=>({
+   numeroBC:String(valBC(x,['N° BC','N BC','Numero BC','Numéro BC'])).trim(),dateBC:String(valBC(x,['Date BC','Date'])).trim(),exercice:String(valBC(x,['Exercice'])).trim(),
+   societe:String(valBC(x,['Société','Societe','Fournisseur'])).trim(),nature:String(valBC(x,['Nature'])).trim(),sousNature:String(valBC(x,['Sous-nature / Produit','Sous-nature','Produit'])).trim(),
+   montantHT:numBC(valBC(x,['Montant HT'])),montantTTC:numBC(valBC(x,['Montant TTC'])),
+   bonsLivraison:jsonBC(valBC(x,['Bons de livraison','BL'])),bem:jsonBC(valBC(x,['BEM'])),numeroFacture:String(valBC(x,['N° Facture','N Facture','Numero Facture'])).trim(),
+   dateFacture:String(valBC(x,['Date facture','Date Facture'])).trim(),montantFactureTTC:numBC(valBC(x,['Facture TTC','Montant facture TTC']))
+  })).filter(b=>b.numeroBC||b.societe||b.dateBC||b.montantTTC);
+  if(!imp.length){alert('Aucun bon de commande reconnu dans ce fichier Excel.');return;}
+  bonsCommande.push(...imp);localStorage.setItem('bonsCommande',JSON.stringify(bonsCommande));afficherBC();alert(imp.length+' bon(s) de commande importé(s).');
+ }catch(err){console.error(err);alert('Impossible de lire ce fichier Excel.');} input.value='';};r.readAsArrayBuffer(file);
+}
+</script>
+
+</body>
+
+</html>
